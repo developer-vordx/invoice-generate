@@ -12,7 +12,8 @@ class InvoiceController extends Controller
      */
     public function index()
     {
-        //
+        $data = Invoice::all();
+        return view('invoices.index', compact('data'));
     }
 
     /**
@@ -20,7 +21,7 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        //
+        return view('invoices.create');
     }
 
     /**
@@ -34,9 +35,10 @@ class InvoiceController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Invoice $invoice)
+    public function show($id)
     {
-        //
+
+        return view('invoices.show', compact('id'));
     }
 
     /**
