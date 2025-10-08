@@ -1,39 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>View Invoice - ReconX</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-</head>
-<body class="bg-gray-50 font-sans">
-<div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="w-56 bg-slate-800 text-white flex flex-col">
-        <div class="p-6 border-b border-gray-700">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-exchange-alt text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold">ReconX</h1>
-                    <p class="text-xs text-gray-400">Invoice Reconciliation</p>
-                </div>
-            </div>
-        </div>
-        <nav class="flex-1 px-3 py-6 space-y-1">
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-slate-700 rounded-lg transition">
-                <i class="fas fa-th-large w-5"></i><span>Dashboard</span>
-            </a>
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 bg-blue-600 rounded-lg text-white">
-                <i class="fas fa-file-invoice w-5"></i><span class="font-medium">Invoices</span>
-            </a>
-        </nav>
-    </aside>
+
+@extends('layouts.auth.app')
+
+@section('title', 'View Invoice - ReconX')
+@php($hideNavbar = true)
+
+@section('content')
+
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden">
@@ -132,7 +104,7 @@
             </div>
         </main>
     </div>
-</div>
+
 
 <!-- Edit Modal -->
 <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -270,5 +242,4 @@
 
     loadInvoice();
 </script>
-</body>
-</html>
+@endsection

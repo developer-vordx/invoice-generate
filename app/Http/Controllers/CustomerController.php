@@ -2,64 +2,175 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ImportCustomersRequest;
 use App\Models\Customer;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $customers = Customer::with('invoices')->latest()->paginate(10);
+        return view('customers.index', compact('customers'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Customer $customer)
     {
-        //
+        $customer->load('invoices');
+        return view('customers.show', compact('customer'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Customer $customer)
+    public function create()
     {
-        //
+        $customers = Customer::latest()->take(20)->get();
+
+        return view('invoices.create', compact('customers'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Customer $customer)
+    public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:customers',
+            'phone' => 'nullable|string',
+            'street' => 'nullable|string',
+            'city' => 'nullable|string',
+            'state' => 'nullable|string',
+            'zip' => 'nullable|string',
+            'country' => 'nullable|string',
+        ]);
+
+        Customer::create($data);
+
+        return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Customer $customer)
+    public function import(ImportCustomersRequest $request)
     {
-        //
+        try {
+            // Ensure file exists and is readable
+            if (!$request->hasFile('file')) {
+                throw new Exception('No file uploaded.');
+            }
+
+            $path = $request->file('file')->getRealPath();
+
+            if (!file_exists($path)) {
+                throw new Exception('Uploaded file not found on server.');
+            }
+
+            $file = fopen($path, 'r');
+            if (!$file) {
+                throw new Exception('Unable to open the uploaded file.');
+            }
+
+            $header = fgetcsv($file);
+
+            if (!$header || count($header) === 0) {
+                throw new Exception('The CSV file appears to be empty or missing headers.');
+            }
+
+            // Normalize header keys (trim, lowercase, replace spaces with underscores)
+            $header = array_map(fn($h) => Str::slug(trim($h), '_'), $header);
+
+            $count = 0;
+            $skipped = 0;
+
+            while (($row = fgetcsv($file)) !== false) {
+                $data = @array_combine($header, $row);
+
+                if (!$data) {
+                    $skipped++;
+                    continue;
+                }
+
+                if (empty($data['email'])) {
+                    $skipped++;
+                    continue; // Skip invalid or empty email rows
+                }
+
+                Customer::updateOrCreate(
+                    ['email' => trim($data['email'])],
+                    [
+                        'name' => $data['name'] ?? null,
+                        'company_name' => $data['company_name'] ?? $data['company'] ?? null,
+                        'address' => $data['street_address'] ?? $data['street'] ?? null,
+                        'city' => $data['city'] ?? null,
+                        'state' => $data['state'] ?? null,
+                        'country' => $data['country'] ?? null,
+                        'postal_code' => $data['zip'] ?? $data['postal_code'] ?? null,
+                        'phone_number' => $data['phone'] ?? null,
+                    ]
+                );
+
+                $count++;
+            }
+
+            fclose($file);
+
+            $message = "{$count} customers imported successfully.";
+            if ($skipped > 0) {
+                $message .= " {$skipped} rows were skipped due to missing or invalid data.";
+            }
+
+            return redirect()
+                ->route('customers.index')
+                ->with('success', $message);
+        } catch (Exception $e) {
+            // Log detailed error for developers
+            Log::error('Customer import failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Return user-friendly error message
+            return redirect()
+                ->back()
+                ->with('error', 'There was an error importing the customers: ' . $e->getMessage());
+        }
     }
+
+    public function search(Request $request)
+    {
+        try {
+            $query = $request->input('query');
+
+            $customers = \App\Models\Customer::withCount('invoices')
+                ->when($query, function ($q) use ($query) {
+                    $q->where(function ($sub) use ($query) {
+                        $sub->where('name', 'like', "%{$query}%")
+                            ->orWhere('email', 'like', "%{$query}%")
+                            ->orWhere('company_name', 'like', "%{$query}%")
+                            ->orWhere('country', 'like', "%{$query}%")
+                            ->orWhere('city', 'like', "%{$query}%")
+                            ->orWhere('state', 'like', "%{$query}%")
+                            ->orWhere('postal_code', 'like', "%{$query}%")
+                            ->orWhere('address', 'like', "%{$query}%");
+                    });
+                })
+                ->orderBy('name', 'asc')
+                ->limit(30)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => $customers->isEmpty()
+                    ? 'No matching customers found.'
+                    : 'Customers retrieved successfully.',
+                'count' => $customers->count(),
+                'data' => $customers
+            ], 200);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while searching for customers.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+
 }

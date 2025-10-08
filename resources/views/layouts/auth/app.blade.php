@@ -29,7 +29,9 @@
     {{-- Main Content --}}
     <div class="flex-1 flex flex-col overflow-hidden">
         {{-- Navbar --}}
-        @include('layouts.auth.navbar')
+        @if(!isset($hideNavbar) || !$hideNavbar)
+            @include('layouts.auth.navbar')
+        @endif
 
         {{-- Page Content --}}
         <main class="flex-1 overflow-y-auto p-8">
@@ -39,6 +41,7 @@
         {{-- Footer --}}
         @include('layouts.auth.footer')
     </div>
+
 </div>
 </body>
 </html>

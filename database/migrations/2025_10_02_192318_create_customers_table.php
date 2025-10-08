@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
             $table->string('stripe_customer_id')->unique()->nullable();
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('name')->nullable();
+            $table->string('company_name')->nullable();
             $table->string('email')->unique();
             $table->string('phone_number')->nullable();
             $table->string('address')->nullable();

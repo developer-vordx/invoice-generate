@@ -1,6 +1,7 @@
 <?php
 namespace App\Mail;
 
+use App\Models\Invoice;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -10,21 +11,24 @@ class InvoiceMail extends Mailable
     use Queueable, SerializesModels;
 
     public $invoice;
-    public $pdf;
+    public $pdfPath;
+    public $checkoutUrl;
 
-    public function __construct($invoice, $pdf)
+    public function __construct(Invoice $invoice, $pdfPath, $checkoutUrl)
     {
         $this->invoice = $invoice;
-        $this->pdf = $pdf;
+        $this->pdfPath = $pdfPath;
+        $this->checkoutUrl = $checkoutUrl;
     }
 
     public function build()
     {
-        return $this->subject('Your Invoice #' . $this->invoice['number'])
-            ->view('emails.invoice')
-            ->with(['invoice' => $this->invoice])
-            ->attachData($this->pdf, 'invoice.pdf', [
-                'mime' => 'application/pdf',
+        return $this->subject("Invoice #{$this->invoice->invoice_number}")
+            ->markdown('emails.invoice')
+//            ->attach($this->pdfPath, ['as' => 'invoice.pdf'])
+            ->with([
+                'invoice' => $this->invoice,
+                'checkoutUrl' => $this->checkoutUrl,
             ]);
     }
 }

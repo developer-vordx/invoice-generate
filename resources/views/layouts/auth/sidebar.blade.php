@@ -24,9 +24,9 @@
             <span>Invoices</span>
         </a>
 
-        <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-sidebar-hover rounded-lg transition">
-            <i class="fas fa-credit-card w-5"></i>
-            <span>Payments</span>
+        <a href="{{ route('customers.index') }}" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-sidebar-hover rounded-lg transition">
+            <i class="fas fa-user w-5"></i>
+            <span>Customers</span>
         </a>
         <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-sidebar-hover rounded-lg transition">
             <i class="fas fa-sync-alt w-5"></i>

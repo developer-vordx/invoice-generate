@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
 
@@ -54,7 +55,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/{invoice}/download', [InvoiceController::class, 'download'])->name('download');
     });
 
-    // Email verification routes
+    Route::prefix('customers')->group(function () {
+        Route::get('/', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+        Route::post('/import', [CustomerController::class, 'import'])->name('customers.import');
+        Route::post('/create', [CustomerController::class, 'create'])->name('customers.create');
+//        Route::get('/search', [CustomerController::class, 'search'])->name('customers.search');
+    });
+
+    Route::get('customer/search', [CustomerController::class, 'search'])->name('customers.search');
 });
 
 /*

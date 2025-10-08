@@ -1,279 +1,299 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Invoice - ReconX</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+@extends('layouts.auth.app')
 
-<body class="bg-gray-50 font-sans">
-<div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="w-56 bg-slate-800 text-white flex flex-col">
-        <div class="p-6 border-b border-gray-700">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-exchange-alt text-white"></i>
+@section('title', 'Create Invoice - ReconX')
+@php($hideNavbar = true)
+
+@section('content')
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white border-b border-gray-200 px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('invoices.index') }}" class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <h2 class="text-xl font-bold text-gray-800">Create New Invoice</h2>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-lg font-bold">ReconX</h1>
-                    <p class="text-xs text-gray-400">Invoice Reconciliation</p>
-                </div>
-            </div>
-        </div>
-        <nav class="flex-1 px-3 py-6 space-y-1">
-            <a href="/dashboard" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-slate-700 rounded-lg transition">
-                <i class="fas fa-th-large w-5"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="/invoices" class="flex items-center space-x-3 px-4 py-3 bg-blue-600 rounded-lg text-white">
-                <i class="fas fa-file-invoice w-5"></i>
-                <span class="font-medium">Invoices</span>
-            </a>
-            <a href="/customers" class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-slate-700 rounded-lg transition">
-                <i class="fas fa-users w-5"></i>
-                <span>Customers</span>
-            </a>
-        </nav>
-    </aside>
+            </header>
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white border-b border-gray-200 px-8 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="/invoices" class="text-gray-600 hover:text-gray-800">
-                        <i class="fas fa-arrow-left"></i>
-                    </a>
-                    <h2 class="text-xl font-bold text-gray-800">Create New Invoice</h2>
-                </div>
-            </div>
-        </header>
+            <main class="flex-1 overflow-y-auto p-8">
+                <div class="max-w-4xl mx-auto">
 
-        <main class="flex-1 overflow-y-auto p-8">
-            <div class="max-w-4xl mx-auto">
-                <form id="invoiceForm" class="space-y-6">
+                    {{-- Display Validation Errors --}}
+                    @if ($errors->any())
+                        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            <ul class="list-disc pl-5">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-                    <!-- Customer Section -->
-                    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Customer Details</h3>
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Select or Add Customer *</label>
-                                <div class="flex space-x-2">
-                                    <input type="text" id="searchCustomer" placeholder="Search or create..."
-                                           class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                                    <button type="button" id="openCustomerModal"
-                                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                                        <i class="fas fa-user-plus"></i>
-                                    </button>
+                    <form id="invoiceForm" action="{{ route('invoices.store') }}" method="POST" class="space-y-6">
+                        @csrf
+
+                        <!-- Customer Section -->
+                        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Customer Details</h3>
+                            <div class="grid grid-cols-2 gap-6">
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                                    <input type="text" name="name"
+                                           value="{{ old('name') }}"
+                                           placeholder="Customer Name"
+                                           class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('name') border-red-500 @enderror" required>
+                                    @error('name')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                                    <input type="email" name="email"
+                                           value="{{ old('email') }}"
+                                           placeholder="customer@example.com"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('email') border-red-500 @enderror" required>
+                                    @error('email')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Customer Email *</label>
-                                <input type="email" id="customerEmail" placeholder="customer@example.com"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
+
+                            <div class="grid grid-cols-2 gap-6 mt-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Street Address *</label>
+                                    <input type="text" name="address" value="{{ old('address') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('address') border-red-500 @enderror" required>
+                                    @error('address')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                                    <input type="text" name="city" value="{{ old('city') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('city') border-red-500 @enderror" required>
+                                    @error('city')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">State / Province</label>
+                                    <input type="text" name="state" value="{{ old('state') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Postal Code *</label>
+                                    <input type="text" name="postal_code" value="{{ old('postal_code') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('postal_code') border-red-500 @enderror" required>
+                                    @error('postal_code')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+                                    <input type="text" name="country" value="{{ old('country') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('country') border-red-500 @enderror" required>
+                                    @error('country')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-6 mt-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Street Address *</label>
-                                <input type="text" id="street" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
-                                <input type="text" id="city" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">State / Province</label>
-                                <input type="text" id="state" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Zip / Postal Code *</label>
-                                <input type="text" id="zip" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
-                            </div>
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Country *</label>
-                                <input type="text" id="country" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
+                        <!-- Invoice Details -->
+                        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mt-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-6">Invoice Details</h3>
+                            <div class="grid grid-cols-2 gap-6">
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Invoice Number *</label>
+                                    <input type="text" name="invoice_number"
+                                           value="{{ old('invoice_number') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('invoice_number') border-red-500 @enderror" required>
+                                    @error('invoice_number')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Issue Date *</label>
+                                    <input type="date" name="issue_date"
+                                           value="{{ old('issue_date') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('issue_date') border-red-500 @enderror" required>
+                                    @error('issue_date')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
+                                    <input type="date" name="due_date"
+                                           value="{{ old('due_date') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('due_date') border-red-500 @enderror" required>
+                                    @error('due_date')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Currency *</label>
+                                    <select name="currency" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 @error('currency') border-red-500 @enderror" required>
+                                        <option value="USD" {{ old('currency')=='USD' ? 'selected':'' }}>USD</option>
+                                        <option value="EUR" {{ old('currency')=='EUR' ? 'selected':'' }}>EUR</option>
+                                        <option value="GBP" {{ old('currency')=='GBP' ? 'selected':'' }}>GBP</option>
+                                    </select>
+                                    @error('currency')
+                                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Invoice Details -->
-                    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Invoice Details</h3>
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Invoice Number *</label>
-                                <input type="text" id="invoiceNumber" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                        <!-- Line Items -->
+                        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 mt-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800">Line Items</h3>
+                                <button type="button" id="addLineItem"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+                                    <i class="fas fa-plus mr-2"></i>Add Item
+                                </button>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Issue Date *</label>
-                                <input type="date" id="issueDate" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Due Date *</label>
-                                <input type="date" id="dueDate" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Currency *</label>
-                                <select id="currency" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
-                                    <option value="USD">USD</option>
-                                    <option value="EUR">EUR</option>
-                                    <option value="GBP">GBP</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Line Items -->
-                    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-                        <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800">Line Items</h3>
-                            <button type="button" id="addLineItem"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-                                <i class="fas fa-plus mr-2"></i>Add Item
-                            </button>
-                        </div>
+                            <div id="lineItemsContainer" class="space-y-4">
+                                {{-- Old line items --}}
+                                @if(old('line_items'))
+                                    @foreach(old('line_items') as $index => $item)
+                                        <div class="grid grid-cols-12 gap-4 bg-gray-50 p-4 rounded-lg">
+                                            <div class="col-span-5">
+                                                <input type="text" name="line_items[{{ $index }}][description]"
+                                                       value="{{ $item['description'] }}" placeholder="Description"
+                                                       class="line-description w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                                            </div>
+                                            <div class="col-span-2">
+                                                <input type="number" name="line_items[{{ $index }}][quantity]"
+                                                       value="{{ $item['quantity'] }}" placeholder="Qty"
+                                                       class="line-quantity w-full px-4 py-3 border border-gray-300 rounded-lg" min="1" required>
+                                            </div>
+                                            <div class="col-span-2">
+                                                <input type="number" name="line_items[{{ $index }}][unit_price]"
+                                                       value="{{ $item['unit_price'] }}" placeholder="Price"
+                                                       class="line-price w-full px-4 py-3 border border-gray-300 rounded-lg" step="0.01" required>
+                                            </div>
+                                            <div class="col-span-2">
+                                                <input type="text" value="${{ number_format($item['quantity']*$item['unit_price'],2) }}" class="line-total w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                                            </div>
+                                            <div class="col-span-1 flex items-center justify-center">
+                                                <button type="button" class="remove-line text-red-500 hover:text-red-700">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
 
-                        <div id="lineItemsContainer" class="space-y-4"></div>
-
-                        <div class="mt-6 pt-6 border-t border-gray-200">
-                            <div class="flex justify-end">
-                                <div class="w-64">
-                                    <div class="flex justify-between text-lg font-semibold text-gray-800">
-                                        <span>Total:</span>
-                                        <span id="totalAmount">$0.00</span>
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <div class="flex justify-end">
+                                    <div class="w-64">
+                                        <div class="flex justify-between text-lg font-semibold text-gray-800">
+                                            <span>Total:</span>
+                                            <span id="totalAmount">$0.00</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Buttons -->
-                    <div class="flex justify-end space-x-4">
-                        <a href="/invoices" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">Cancel</a>
-                        <button type="submit"
-                                class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
-                            Create Invoice
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </main>
+                        <!-- Buttons -->
+                        <div class="flex justify-end space-x-4 mt-6">
+                            <a href="{{ route('invoices.index') }}" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">Cancel</a>
+                            <button type="submit"
+                                    class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
+                                Create Invoice
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
     </div>
-</div>
 
-<!-- Customer Modal -->
-<div id="customerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-8">
-        <h3 class="text-lg font-semibold mb-6">Add New Customer</h3>
-        <form id="customerForm" class="space-y-4">
-            <input type="text" id="newCustomerName" placeholder="Customer Name" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-            <input type="email" id="newCustomerEmail" placeholder="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-            <input type="text" id="newCustomerStreet" placeholder="Street Address" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" id="newCustomerCity" placeholder="City" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-                <input type="text" id="newCustomerCountry" placeholder="Country" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
-            </div>
-            <div class="flex justify-end space-x-3 mt-6">
-                <button type="button" id="closeModal" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Save Customer</button>
-            </div>
-        </form>
-    </div>
-</div>
+    {{-- JS for dynamic line items --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lineItemsContainer = document.getElementById('lineItemsContainer');
+            const addLineItemBtn = document.getElementById('addLineItem');
+            const totalAmount = document.getElementById('totalAmount');
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const lineItemsContainer = document.getElementById('lineItemsContainer');
-        const addLineItemBtn = document.getElementById('addLineItem');
-        const totalAmount = document.getElementById('totalAmount');
-        const customerModal = document.getElementById('customerModal');
-        const openModalBtn = document.getElementById('openCustomerModal');
-        const closeModalBtn = document.getElementById('closeModal');
-        const customerForm = document.getElementById('customerForm');
-        const searchCustomer = document.getElementById('searchCustomer');
+            function updateTotal() {
+                let sum = 0;
+                document.querySelectorAll('.line-total').forEach(el => {
+                    sum += parseFloat(el.value.replace('$','')) || 0;
+                });
+                totalAmount.textContent = `$${sum.toFixed(2)}`;
+            }
 
-        // Add new line item dynamically
-        function addLineItem() {
-            const itemRow = document.createElement('div');
-            itemRow.className = 'grid grid-cols-12 gap-4 bg-gray-50 p-4 rounded-lg';
-            itemRow.innerHTML = `
+            function addLineItem(desc='', qty=1, price=0) {
+                const index = lineItemsContainer.children.length;
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 gap-4 bg-gray-50 p-4 rounded-lg';
+                row.innerHTML = `
             <div class="col-span-5">
-                <input type="text" placeholder="Description" class="line-description w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                <input type="text" name="line_items[${index}][description]" value="${desc}" placeholder="Description"
+                       class="line-description w-full px-4 py-3 border border-gray-300 rounded-lg" required>
             </div>
             <div class="col-span-2">
-                <input type="number" placeholder="Qty" class="line-quantity w-full px-4 py-3 border border-gray-300 rounded-lg" value="1" min="1" required>
+                <input type="number" name="line_items[${index}][quantity]" value="${qty}" placeholder="Qty"
+                       class="line-quantity w-full px-4 py-3 border border-gray-300 rounded-lg" min="1" required>
             </div>
             <div class="col-span-2">
-                <input type="number" placeholder="Price" class="line-price w-full px-4 py-3 border border-gray-300 rounded-lg" step="0.01" required>
+                <input type="number" name="line_items[${index}][unit_price]" value="${price}" placeholder="Price"
+                       class="line-price w-full px-4 py-3 border border-gray-300 rounded-lg" step="0.01" required>
             </div>
             <div class="col-span-2">
-                <input type="text" placeholder="$0.00" class="line-total w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg" readonly>
+                <input type="text" value="$${(qty*price).toFixed(2)}" class="line-total w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg" readonly>
             </div>
             <div class="col-span-1 flex items-center justify-center">
-                <button type="button" class="remove-line text-red-500 hover:text-red-700">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>`;
-            lineItemsContainer.appendChild(itemRow);
+                <button type="button" class="remove-line text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+                lineItemsContainer.appendChild(row);
 
-            const qty = itemRow.querySelector('.line-quantity');
-            const price = itemRow.querySelector('.line-price');
-            const total = itemRow.querySelector('.line-total');
+                const qtyInput = row.querySelector('.line-quantity');
+                const priceInput = row.querySelector('.line-price');
+                const totalInput = row.querySelector('.line-total');
 
-            function updateRowTotal() {
-                const q = parseFloat(qty.value) || 0;
-                const p = parseFloat(price.value) || 0;
-                total.value = `$${(q * p).toFixed(2)}`;
+                function updateRowTotal() {
+                    const q = parseFloat(qtyInput.value) || 0;
+                    const p = parseFloat(priceInput.value) || 0;
+                    totalInput.value = `$${(q*p).toFixed(2)}`;
+                    updateTotal();
+                }
+
+                qtyInput.addEventListener('input', updateRowTotal);
+                priceInput.addEventListener('input', updateRowTotal);
+
+                row.querySelector('.remove-line').addEventListener('click', () => {
+                    row.remove();
+                    updateTotal();
+                });
+
                 updateTotal();
             }
 
-            qty.addEventListener('input', updateRowTotal);
-            price.addEventListener('input', updateRowTotal);
-
-            itemRow.querySelector('.remove-line').addEventListener('click', () => {
-                itemRow.remove();
-                updateTotal();
-            });
-        }
-
-        function updateTotal() {
-            let sum = 0;
-            document.querySelectorAll('.line-total').forEach(el => {
-                sum += parseFloat(el.value.replace('$', '')) || 0;
-            });
-            totalAmount.textContent = `$${sum.toFixed(2)}`;
-        }
-
-        addLineItemBtn.addEventListener('click', addLineItem);
-
-        // Initialize with one line
-        addLineItem();
-
-        // Handle customer modal
-        openModalBtn.addEventListener('click', () => customerModal.classList.remove('hidden'));
-        closeModalBtn.addEventListener('click', () => customerModal.classList.add('hidden'));
-
-        customerForm.addEventListener('submit', e => {
-            e.preventDefault();
-            const name = document.getElementById('newCustomerName').value;
-            const email = document.getElementById('newCustomerEmail').value;
-            searchCustomer.value = name;
-            document.getElementById('customerEmail').value = email;
-            customerModal.classList.add('hidden');
-            customerForm.reset();
-            alert('Customer added successfully!');
+            addLineItemBtn.addEventListener('click', () => addLineItem());
+            // Initialize total for old items
+            updateTotal();
         });
-    });
-</script>
-</body>
-</html>
+    </script>
+@endsection
