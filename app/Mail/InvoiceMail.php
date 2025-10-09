@@ -24,7 +24,7 @@ class InvoiceMail extends Mailable
     public function build()
     {
         return $this->subject("Invoice #{$this->invoice->invoice_number}")
-            ->markdown('emails.invoice')
+            ->view('emails.invoice')
 //            ->attach($this->pdfPath, ['as' => 'invoice.pdf'])
             ->with([
                 'invoice' => $this->invoice,

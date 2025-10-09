@@ -5,7 +5,10 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,20 +44,24 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', [InvoiceController::class, 'index'])->name('index');
         Route::get('/create', [InvoiceController::class, 'create'])->name('create');
         Route::post('/', [InvoiceController::class, 'store'])->name('store');
-        Route::get('/{id}', [InvoiceController::class, 'show'])->name('show');
+        Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->name('edit');
         Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
         Route::delete('/{invoice}', [InvoiceController::class, 'destroy'])->name('destroy');
-        Route::get('/{invoice}/download', [InvoiceController::class, 'download'])->name('download');
-    });
+        Route::get('/{invoice}/download', [InvoiceController::class, 'downloadPdf'])->name('download');
+        Route::get('/{id}/send', [InvoiceController::class, 'sendInvoiceEmail'])->name('sendEmail');       // Send email
+        Route::post('/{invoice}/void', [InvoiceController::class, 'void'])->name('void');
 
+
+    });
+    Route::get('/reports', [InvoiceController::class, 'reports'])->name('reports');
     Route::prefix('customers')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('customers.index');
         Route::get('/{customer}', [CustomerController::class, 'show'])->name('customers.show');
@@ -63,8 +70,16 @@ Route::middleware('auth')->group(function () {
 //        Route::get('/search', [CustomerController::class, 'search'])->name('customers.search');
     });
 
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/users/invite', [UserController::class, 'invite'])->name('users.invite');
+    Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
     Route::get('customer/search', [CustomerController::class, 'search'])->name('customers.search');
 });
+Route::get('/invitation/accept/{token}', [InvitationController::class, 'accept'])
+    ->name('invitation.accept');
+
+Route::post('/invitation/accept/{token}', [InvitationController::class, 'acceptSubmit'])
+    ->name('invitation.accept.submit');
 
 /*
 |--------------------------------------------------------------------------

@@ -12,7 +12,6 @@
     </div>
 </div>
 
-{{-- ✅ Chart.js script --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -21,10 +20,10 @@
         new Chart(revenueCtx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                labels: @json($chartLabels),
                 datasets: [{
                     label: 'Revenue ($)',
-                    data: [12000, 15000, 11000, 18000, 16000, 19000, 22000],
+                    data: @json($chartValues),
                     borderColor: '#2563eb',
                     backgroundColor: 'rgba(37, 99, 235, 0.1)',
                     borderWidth: 2,
@@ -34,12 +33,8 @@
             },
             options: {
                 responsive: true,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { beginAtZero: true }
-                }
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
             }
         });
 
@@ -48,18 +43,16 @@
         new Chart(invoiceCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Paid', 'Pending', 'Overdue'],
+                labels: ['Paid', 'Pending', 'Unpaid'],
                 datasets: [{
-                    data: [60, 25, 15],
+                    data: [{{ $paidCount }}, {{ $pendingCount }}, {{ $overdueCount }}],
                     backgroundColor: ['#16a34a', '#facc15', '#dc2626'],
                     borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
+                plugins: { legend: { position: 'bottom' } }
             }
         });
     });

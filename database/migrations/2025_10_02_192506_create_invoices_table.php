@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('invoice_number')->unique();
             $table->decimal('amount', 10, 2);
             $table->enum('status', ['pending', 'sent', 'paid'])->default('pending');
+            $table->timestamp('due_date')->nullable();
+            $table->timestamp('issue_date')->nullable();
             $table->text('description')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();

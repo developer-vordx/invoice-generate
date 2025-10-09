@@ -4,7 +4,7 @@
         <div class="flex items-start justify-between">
             <div>
                 <p class="text-sm text-gray-600 mb-1">Total Invoices</p>
-                <h3 class="text-3xl font-bold text-gray-800">156</h3>
+                <h3 class="text-3xl font-bold text-gray-800">{{ $totalInvoices }}</h3>
                 <p class="text-sm text-green-600 mt-2">+12%</p>
             </div>
             <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -18,7 +18,7 @@
         <div class="flex items-start justify-between">
             <div>
                 <p class="text-sm text-gray-600 mb-1">Total Payments</p>
-                <h3 class="text-3xl font-bold text-gray-800">142</h3>
+                <h3 class="text-3xl font-bold text-gray-800">{{ $totalPayments }}</h3>
                 <p class="text-sm text-green-600 mt-2">+8%</p>
             </div>
             <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
@@ -32,7 +32,7 @@
         <div class="flex items-start justify-between">
             <div>
                 <p class="text-sm text-gray-600 mb-1">Unmatched Payments</p>
-                <h3 class="text-3xl font-bold text-gray-800">14</h3>
+                <h3 class="text-3xl font-bold text-gray-800">{{ $unmatchedPayments }}</h3>
                 <p class="text-sm text-red-600 mt-2">-15%</p>
             </div>
             <div class="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center">
@@ -46,7 +46,7 @@
         <div class="flex items-start justify-between">
             <div>
                 <p class="text-sm text-gray-600 mb-1">Monthly Revenue</p>
-                <h3 class="text-3xl font-bold text-gray-800">$485k</h3>
+                <h3 class="text-3xl font-bold text-gray-800">${{ number_format($monthlyRevenue, 2) }}</h3>
                 <p class="text-sm text-green-600 mt-2">+23%</p>
             </div>
             <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
