@@ -38,18 +38,18 @@
             <span>Customers</span>
         </a>
 
-        <!-- Reconciliation -->
-{{--        <a href="#"--}}
-{{--           class="flex items-center space-x-3 px-4 py-3 rounded-lg transition--}}
-{{--                  {{ request()->routeIs('reconciliation.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-sidebar-hover' }}">--}}
-{{--            <i class="fas fa-sync-alt w-5"></i>--}}
-{{--            <span>Reconciliation</span>--}}
-{{--        </a>--}}
+        <!-- Products -->
+        <a href="{{ route('products.index') }}"
+           class="flex items-center space-x-3 px-4 py-3 rounded-lg transition
+                  {{ request()->routeIs('products.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-sidebar-hover' }}">
+            <i class="fas fa-box w-5"></i>
+            <span>Products</span>
+        </a>
 
         <!-- Reports -->
         <a href="{{ route('reports') }}"
            class="flex items-center space-x-3 px-4 py-3 rounded-lg transition
-          {{ request()->routeIs('reports') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-sidebar-hover' }}">
+                  {{ request()->routeIs('reports') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-sidebar-hover' }}">
             <i class="fas fa-chart-bar w-5"></i>
             <span>Reports</span>
         </a>
@@ -63,7 +63,7 @@
         </a>
 
         <!-- Notifications -->
-        <a href="#"
+        <a href="{{ route('notifications.index') }}"
            class="flex items-center space-x-3 px-4 py-3 rounded-lg transition
                   {{ request()->routeIs('notifications.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-sidebar-hover' }}">
             <i class="fas fa-bell w-5"></i>
@@ -71,7 +71,7 @@
         </a>
 
         <!-- Settings -->
-        <a href="#"
+        <a href="{{ route('settings.index') }}"
            class="flex items-center space-x-3 px-4 py-3 rounded-lg transition
                   {{ request()->routeIs('settings.*') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-sidebar-hover' }}">
             <i class="fas fa-cog w-5"></i>
@@ -81,8 +81,9 @@
 
     <!-- 💬 Help & Support -->
     <div class="p-3 border-t border-gray-700">
-        <a href="#"
-           class="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-sidebar-hover rounded-lg transition">
+        <a href="{{ route('help') }}"
+           class="flex items-center space-x-3 px-4 py-3 rounded-lg transition
+                  {{ request()->routeIs('help') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-sidebar-hover' }}">
             <i class="fas fa-question-circle w-5"></i>
             <span>Help & Support</span>
         </a>

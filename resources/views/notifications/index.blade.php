@@ -1,82 +1,61 @@
 @extends('layouts.auth.app')
 
-@section('title', 'Notifications - ReconX')
+@section('title', 'Notifications - ' . config('app.name', 'ReconX'))
 
 @section('content')
-    <!-- Page Header -->
-    <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
-        <h2 class="text-xl font-bold text-gray-800">Notifications</h2>
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">All Notifications</h1>
 
-        <button id="markAllReadBtn" class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-            <i class="fas fa-check-double mr-2"></i>Mark All as Read
-        </button>
-    </header>
+        <form action="{{ route('notifications.markAllRead') }}" method="POST">
+            @csrf
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                <i class="fas fa-check mr-2"></i> Mark All as Read
+            </button>
+        </form>
+    </div>
 
-    <!-- Notifications List -->
-    <main class="p-8">
-        <div class="bg-white rounded-xl shadow border border-gray-100 divide-y">
+    <div class="bg-white shadow rounded-xl border border-gray-100 overflow-hidden">
+        <table class="min-w-full border-collapse">
+            <thead class="bg-gray-50 text-left text-gray-600 uppercase text-sm">
+            <tr>
+                <th class="p-4 border-b">Title</th>
+                <th class="p-4 border-b">Message</th>
+                <th class="p-4 border-b">Status</th>
+                <th class="p-4 border-b">Date</th>
+                <th class="p-4 border-b text-right">Action</th>
+            </tr>
+            </thead>
+            <tbody>
             @forelse($notifications as $notification)
-                <div class="flex justify-between items-start p-5 hover:bg-gray-50 transition">
-                    <div class="flex items-start space-x-3">
-                        <!-- Icon -->
-                        <div class="p-2 rounded-full
-                            @if($notification->type === 'invoice') bg-blue-100 text-blue-600
-                            @elseif($notification->type === 'user') bg-green-100 text-green-600
-                            @elseif($notification->type === 'system') bg-purple-100 text-purple-600
-                            @else bg-gray-100 text-gray-600 @endif">
-                            <i class="fas
-                                @if($notification->type === 'invoice') fa-file-invoice-dollar
-                                @elseif($notification->type === 'user') fa-user-plus
-                                @elseif($notification->type === 'system') fa-cog
-                                @else fa-bell @endif"></i>
-                        </div>
-
-                        <!-- Content -->
-                        <div>
-                            <p class="font-medium text-gray-800">
-                                {{ $notification->title ?? 'System Notification' }}
-                            </p>
-                            <p class="text-sm text-gray-500 mt-1">
-                                {{ $notification->message ?? 'No details available.' }}
-                            </p>
-                            <p class="text-xs text-gray-400 mt-2">
-                                {{ $notification->created_at->diffForHumans() }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Status -->
-                    @if(!$notification->is_read)
-                        <span class="w-3 h-3 bg-blue-500 rounded-full mt-2"></span>
-                    @endif
-                </div>
+                @php $data = $notification->data; @endphp
+                <tr class="hover:bg-gray-50 transition {{ $notification->read_at ? '' : 'bg-blue-50' }}">
+                    <td class="p-4 border-b font-semibold">{{ $data['title'] ?? 'Notification' }}</td>
+                    <td class="p-4 border-b text-gray-700">{{ $data['message'] ?? '' }}</td>
+                    <td class="p-4 border-b">
+                        @if(isset($data['status']))
+                            <span class="px-2 py-1 rounded-full text-xs uppercase
+                                    {{ $data['status'] === 'complete' ? 'bg-green-100 text-green-700' :
+                                       ($data['status'] === 'incomplete' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600') }}">
+                                    {{ $data['status'] }}
+                                </span>
+                        @endif
+                    </td>
+                    <td class="p-4 border-b text-gray-500">{{ $notification->created_at->format('M d, Y h:i A') }}</td>
+                    <td class="p-4 border-b text-right">
+                        <a href="{{ $data['url'] ?? '#' }}" target="_blank"
+                           class="text-blue-600 hover:underline text-sm">View</a>
+                    </td>
+                </tr>
             @empty
-                <div class="text-center text-gray-500 py-12">
-                    <i class="fas fa-bell-slash text-3xl mb-3"></i>
-                    <p>No notifications yet.</p>
-                </div>
+                <tr>
+                    <td colspan="5" class="text-center py-6 text-gray-500">No notifications found.</td>
+                </tr>
             @endforelse
-        </div>
-    </main>
+            </tbody>
+        </table>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Mark all as read
-        document.getElementById('markAllReadBtn').addEventListener('click', () => {
-            fetch('{{ route('notifications.markAllRead') }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            }).then(res => res.json()).then(data => {
-                Swal.fire({
-                    icon: data.success ? 'success' : 'error',
-                    title: data.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                if (data.success) location.reload();
-            });
-        });
-    </script>
+    <div class="mt-4">
+        {{ $notifications->links('vendor.pagination.tailwind') }}
+    </div>
 @endsection

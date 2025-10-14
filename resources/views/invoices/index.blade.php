@@ -1,152 +1,139 @@
 @extends('layouts.auth.app')
 
-@section('title', 'Dashboard - ' . config('app.name', 'ReconX'))
+@section('title', 'Invoices - ' . config('app.name', 'ReconX'))
 
 @section('content')
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Invoices</h1>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto p-8">
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <h2 class="text-3xl font-bold text-gray-800">Invoices</h2>
-                <p class="text-gray-600 mt-1">Manage and track all your invoices</p>
-            </div>
-            <a href="{{ route('invoices.create') }}"
-               class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition inline-flex items-center">
-                <i class="fas fa-plus mr-2"></i>Create Invoice
+        <div class="space-x-2">
+            <a href="{{ route('invoices.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                <i class="fas fa-plus mr-2"></i> Create Invoice
             </a>
         </div>
+    </div>
 
-        <!-- Filters (static for now, can be made dynamic later) -->
-        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option>All Statuses</option>
-                        <option>Paid</option>
-                        <option>Sent</option>
-                        <option>Draft</option>
-                        <option>Overdue</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option>Last 30 days</option>
-                        <option>Last 7 days</option>
-                        <option>Last 90 days</option>
-                        <option>This year</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Client</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option>All Clients</option>
-                        <option>Acme Corp Ltd</option>
-                        <option>Global Tech Solutions</option>
-                        <option>Manufacturing Co</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Amount</label>
-                    <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <option>Any Amount</option>
-                        <option>Under $10,000</option>
-                        <option>$10,000 - $50,000</option>
-                        <option>Over $50,000</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+    <!-- Search -->
+    <div class="mb-4">
+        <input type="text" id="searchInvoice"
+               placeholder="Search by invoice number, client, or status..."
+               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-600">
+    </div>
 
-        <!-- Invoices Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                <tr>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                        <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded">
-                    </th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Invoice #</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Client</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Issue Date</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Due Date</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+    <!-- Invoice Table -->
+    <div class="bg-white shadow rounded-xl border border-gray-100 overflow-x-auto">
+        <table class="min-w-full border-collapse">
+            <thead>
+            <tr class="bg-gray-50 text-left text-gray-600 uppercase text-sm">
+                <th class="p-4 border-b">Invoice #</th>
+                <th class="p-4 border-b">Client</th>
+                <th class="p-4 border-b">Amount</th>
+                <th class="p-4 border-b">Issue Date</th>
+                <th class="p-4 border-b">Due Date</th>
+                <th class="p-4 border-b">Status</th>
+                <th class="p-4 border-b text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody id="invoiceTableBody">
+            @forelse($invoices as $invoice)
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="p-4 border-b font-semibold">
+                        <a href="{{ route('invoices.show', $invoice->id) }}" class="text-blue-600 hover:underline">
+                            INV-{{ $invoice->invoice_number }}
+                        </a>
+                    </td>
+                    <td class="p-4 border-b">{{ $invoice->customer->name ?? 'N/A' }}</td>
+                    <td class="p-4 border-b font-semibold">USD {{ number_format($invoice->amount, 2) }}</td>
+                    <td class="p-4 border-b text-gray-600">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('M d, Y') }}</td>
+                    <td class="p-4 border-b text-gray-600">{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</td>
+                    <td class="p-4 border-b">
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full
+                            @if($invoice->status == 'paid') text-green-600 bg-green-50
+                            @elseif($invoice->status == 'overdue') text-red-600 bg-red-50
+                            @elseif($invoice->status == 'draft') text-gray-600 bg-gray-100
+                            @else text-blue-600 bg-blue-50 @endif">
+                            {{ ucfirst($invoice->status) }}
+                        </span>
+                    </td>
+                    <td class="p-4 border-b text-right space-x-3">
+                        <a href="{{ route('invoices.show', $invoice->id) }}" class="text-blue-600 hover:underline">View</a>
+                        <a href="{{ route('invoices.edit', $invoice->id) }}" class="text-gray-600 hover:underline">Edit</a>
+                        <a href="{{ route('invoices.download', $invoice->id) }}" class="text-gray-600 hover:underline">Download</a>
+                    </td>
                 </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                @forelse($invoices as $invoice)
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4">
-                            <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded">
-                        </td>
-                        <td class="px-6 py-4 font-semibold">
-                            <a href="{{ route('invoices.show', $invoice->id) }}"
-                               class="text-blue-600 hover:text-blue-800 hover:underline transition">
-                                INV-{{ $invoice->invoice_number }}
-                            </a>
-                        </td>
+            @empty
+                <tr>
+                    <td colspan="7" class="text-center py-6 text-gray-500">No invoices found.</td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
 
-                        <td class="px-6 py-4 text-gray-800">{{ $invoice->customer->name }}</td>
-                        <td class="px-6 py-4 font-semibold text-gray-800">USD {{ number_format($invoice->amount, 2) }}</td>
-                        <td class="px-6 py-4 text-gray-600">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('M d, Y') }}</td>
-                        <td class="px-6 py-4 text-gray-600">{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</td>
+    <!-- Pagination -->
+    <div class="mt-4">
+        {{ $invoices->links('vendor.pagination.tailwind') }}
+    </div>
 
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 text-xs font-semibold
-                                @if($invoice->status == 'paid') text-green-600 bg-green-50
-                                @elseif($invoice->status == 'overdue') text-red-600 bg-red-50
-                                @elseif($invoice->status == 'draft') text-gray-600 bg-gray-100
-                                @else text-blue-600 bg-blue-50 @endif
-                                rounded-full">
-                                {{ ucfirst($invoice->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <a href="{{ route('invoices.show', $invoice->id) }}" class="text-gray-400 hover:text-gray-600 mr-3">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ route('invoices.edit', $invoice->id) }}" class="text-gray-400 hover:text-gray-600 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{{ route('invoices.download', $invoice->id) }}" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-download"></i>
-                            </a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="text-center py-6 text-gray-500">
-                            No invoices found.
-                        </td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
+    {{-- Scripts --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInvoice');
+            const tableBody = document.getElementById('invoiceTableBody');
+            let timeout = null;
 
-            <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                <div class="text-sm text-gray-600">
-                    @if ($invoices->total() > 0)
-                        Showing
-                        <span class="font-semibold">{{ $invoices->firstItem() }}</span>
-                        to
-                        <span class="font-semibold">{{ $invoices->lastItem() }}</span>
-                        of
-                        <span class="font-semibold">{{ $invoices->total() }}</span>
-                        invoices
-                    @else
-                        No invoices to display.
-                    @endif
-                </div>
+            searchInput.addEventListener('keyup', function () {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    const query = this.value.trim();
 
-                <div>
-                    {{ $invoices->links('vendor.pagination.tailwind') }}
-                </div>
-            </div>
-        </div>
-    </main>
+                    tableBody.innerHTML = `
+                        <tr><td colspan="7" class="text-center py-6 text-gray-500">Searching...</td></tr>
+                    `;
+
+                    fetch(`{{ route('invoices.search') }}?query=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const invoices = data.data;
+                            if (!invoices || invoices.length === 0) {
+                                tableBody.innerHTML = `
+                                    <tr><td colspan="7" class="text-center py-6 text-gray-500">No matching invoices found.</td></tr>
+                                `;
+                                return;
+                            }
+
+                            tableBody.innerHTML = invoices.map(inv => `
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="p-4 border-b font-semibold">
+                                        <a href="/invoices/${inv.id}" class="text-blue-600 hover:underline">INV-${inv.invoice_number}</a>
+                                    </td>
+                                    <td class="p-4 border-b">${inv.customer_name ?? 'N/A'}</td>
+                                    <td class="p-4 border-b font-semibold">USD ${parseFloat(inv.amount).toFixed(2)}</td>
+                                    <td class="p-4 border-b">${inv.issue_date_formatted ?? 'N/A'}</td>
+                                    <td class="p-4 border-b">${inv.due_date_formatted ?? 'N/A'}</td>
+                                    <td class="p-4 border-b">
+                                        <span class="px-3 py-1 text-xs font-semibold rounded-full ${
+                                inv.status === 'paid' ? 'text-green-600 bg-green-50' :
+                                    inv.status === 'overdue' ? 'text-red-600 bg-red-50' :
+                                        inv.status === 'draft' ? 'text-gray-600 bg-gray-100' :
+                                            'text-blue-600 bg-blue-50'
+                            }">${inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}</span>
+                                    </td>
+                                    <td class="p-4 border-b text-right space-x-3">
+                                        <a href="/invoices/${inv.id}" class="text-blue-600 hover:underline">View</a>
+                                        <a href="/invoices/${inv.id}/edit" class="text-gray-600 hover:underline">Edit</a>
+                                        <a href="/invoices/${inv.id}/download" class="text-gray-600 hover:underline">Download</a>
+                                    </td>
+                                </tr>
+                            `).join('');
+                        })
+                        .catch(() => {
+                            tableBody.innerHTML = `
+                                <tr><td colspan="7" class="text-center py-6 text-red-500">Error loading data.</td></tr>
+                            `;
+                        });
+                }, 300);
+            });
+        });
+    </script>
 @endsection

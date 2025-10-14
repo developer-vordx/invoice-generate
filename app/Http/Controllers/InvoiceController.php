@@ -165,6 +165,55 @@ class InvoiceController extends Controller
     }
 
 
+    public function search(Request $request)
+    {
+        try {
+            $query = $request->input('query');
+
+            $invoices = Invoice::with('customer')
+                ->when($query, function ($q) use ($query) {
+                    $q->where('invoice_number', 'like', "%{$query}%")
+                        ->orWhereHas('customer', function ($q2) use ($query) {
+                            $q2->where('name', 'like', "%{$query}%");
+                        })
+                        ->orWhere('status', 'like', "%{$query}%");
+                })
+                ->orderBy('issue_date', 'desc')
+                ->limit(25)
+                ->get();
+
+            $data = $invoices->map(function ($invoice) {
+                return [
+                    'id' => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'customer_name' => $invoice->customer->name ?? 'N/A',
+                    'amount' => number_format($invoice->amount, 2),
+                    'status' => $invoice->status,
+                    'issue_date_formatted' => optional($invoice->issue_date)->format('M d, Y'),
+                    'due_date_formatted' => optional($invoice->due_date)->format('M d, Y'),
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            Log::error('Invoice search failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'query' => $request->input('query'),
+            ]);
+
+            // Return a JSON error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while searching invoices.',
+                'error' => config('app.debug') ? $e->getMessage() : null, // Optional: show detailed error only in debug mode
+            ], 500);
+        }
+    }
 
     /**
      * Show the form for editing the specified resource.

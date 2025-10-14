@@ -8,6 +8,8 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +53,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [InvoiceController::class, 'index'])->name('index');
         Route::get('/create', [InvoiceController::class, 'create'])->name('create');
         Route::post('/', [InvoiceController::class, 'store'])->name('store');
+        Route::get('search', [App\Http\Controllers\InvoiceController::class, 'search'])->name('search');
         Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         Route::get('/{invoice}/edit', [InvoiceController::class, 'edit'])->name('edit');
         Route::put('/{invoice}', [InvoiceController::class, 'update'])->name('update');
@@ -74,6 +77,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/invite', [UserController::class, 'invite'])->name('users.invite');
     Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
     Route::get('customer/search', [CustomerController::class, 'search'])->name('customers.search');
+    Route::resource('products', ProductController::class);
+
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings/organization', [SettingController::class, 'updateOrganization'])->name('settings.organization.update');
+    Route::post('/settings/integration', [SettingController::class, 'updateIntegration'])->name('settings.integration.update');
+    Route::get('/help', function () {
+        return view('help');
+    })->name('help');
 });
 Route::get('/invitation/accept/{token}', [InvitationController::class, 'accept'])
     ->name('invitation.accept');
