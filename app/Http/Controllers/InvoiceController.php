@@ -50,10 +50,10 @@ class InvoiceController extends Controller
             'address' => 'required|string',
             'city' => 'required|string',
             'country' => 'required|string',
+            'customer_id' => 'required|integer|exists:customers,id',
             'invoice_number' => 'required|string|unique:invoices,invoice_number',
             'issue_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice.issue_date',
-            'currency' => 'required|string',
             'line_items.*.description' => 'required|string',
             'line_items.*.quantity' => 'required|numeric|min:1',
             'line_items.*.unit_price' => 'required|numeric|min:0',
@@ -107,35 +107,15 @@ class InvoiceController extends Controller
 //            file_put_contents($pdfPath, $pdf);
 
             // ✅ Stripe Checkout
-            Stripe::setApiKey(config('services.stripe.secret'));
-            $session = StripeSession::create([
-                'payment_method_types' => ['card'],
-                'line_items' => [
-                    [
-                        'price_data' => [
-                            'currency' => 'USD',
-                            'product_data' => [
-                                'name' => "Invoice #{$invoice->invoice_number}",
-                            ],
-                            'unit_amount' => $totalAmount * 100,
-                        ],
-                        'quantity' => 1,
-                    ]
-                ],
-                'mode' => 'payment',
-                'success_url' => route('invoices.show', $invoice->id) . '?paid=true',
-                'cancel_url' => route('invoices.show', $invoice->id),
-            ]);
 
             // ✅ Dispatch Mail Job
-            SendInvoiceEmail::dispatch($invoice, '', $session->url);
+            SendInvoiceEmail::dispatch($invoice, '', '');
 
             \DB::commit();
 
-            return response()->json([
-                'message' => 'Invoice created successfully!',
-                'invoice_id' => $invoice->id,
-            ]);
+            return redirect()->route('invoices.index')
+                ->with('success', 'Invoice created successfully!');
+
         } catch (\Throwable $e) {
             \DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);

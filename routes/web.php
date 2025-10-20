@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoiceResponseController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
@@ -19,7 +20,20 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/invoice/respond/{invoice}', [InvoiceResponseController::class, 'respond'])
+    ->name('invoice.respond');
+
+Route::get('/invoice/{invoice}/rejected', [InvoiceResponseController::class, 'rejected'])
+    ->name('invoices.rejected');
+
+Route::get('/invoice/{invoice}/success', [InvoiceResponseController::class, 'success'])
+    ->name('invoices.success');
+
+Route::get('/invoice/{invoice}/cancel', [InvoiceResponseController::class, 'cancel'])
+    ->name('invoices.cancel');
+
 Route::middleware('guest')->group(function () {
+
 
     // Login & Register Views
     Route::view('/login', 'auth.login')->name('login');
@@ -64,25 +78,27 @@ Route::middleware('auth')->group(function () {
 
 
     });
+
     Route::get('/reports', [InvoiceController::class, 'reports'])->name('reports');
     Route::prefix('customers')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('customers.index');
-        Route::get('/{customer}', [CustomerController::class, 'show'])->name('customers.show');
         Route::post('/import', [CustomerController::class, 'import'])->name('customers.import');
-        Route::post('/create', [CustomerController::class, 'create'])->name('customers.create');
-//        Route::get('/search', [CustomerController::class, 'search'])->name('customers.search');
+        Route::get('/create', [CustomerController::class, 'create'])->name('customers.create');
+        Route::post('/create', [CustomerController::class, 'store'])->name('customers.store');
+        Route::get('/search', [CustomerController::class, 'search'])->name('customers.search');
+        Route::get('list/fetching', [App\Http\Controllers\Ajax\CustomerController::class, 'fetch'])->name('customers.fetch');
+        Route::get('/{customer}', [CustomerController::class, 'show'])->name('customers.show');
     });
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::post('/users/invite', [UserController::class, 'invite'])->name('users.invite');
     Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
-    Route::get('customer/search', [CustomerController::class, 'search'])->name('customers.search');
-    Route::get('/customers/fetch', [App\Http\Controllers\Ajax\CustomerController::class, 'fetch'])->name('customers.fetch');
 
-    Route::resource('products', ProductController::class);
+
     // AJAX product search and fetch
-    Route::get('/product/fetch', [App\Http\Controllers\Ajax\ProductController::class, 'fetch'])->name('products.fetch');
-    Route::get('/product/search', [App\Http\Controllers\Ajax\ProductController::class, 'search'])->name('products.search');
+    Route::get('/products/fetch', [App\Http\Controllers\Ajax\ProductController::class, 'fetch'])->name('products.fetch');
+    Route::get('/products/search', [App\Http\Controllers\Ajax\ProductController::class, 'search'])->name('products.search');
+    Route::resource('products', ProductController::class);
 
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');

@@ -47,8 +47,7 @@
                     <td class="p-4 border-b">{{ $customer->country ?? 'N/A' }}</td>
                     <td class="p-4 border-b">{{ $customer->invoices->count() }}</td>
                     <td class="p-4 border-b text-right">
-                        <a href="{{ route('customers.show', $customer->id) }}"
-                           class="text-blue-600 hover:underline">View</a>
+                        <a href="{{ route('customers.show', $customer->id) }}" class="text-blue-600 hover:underline">View</a>
                     </td>
                 </tr>
             @empty
@@ -58,6 +57,11 @@
             @endforelse
             </tbody>
         </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-4">
+        {{ $customers->links('pagination::tailwind') }}
     </div>
 
     <!-- Import CSV Modal -->
@@ -106,46 +110,45 @@
 
                     // Show loading state
                     tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="7" class="text-center py-6 text-gray-500">Searching...</td>
-                        </tr>`;
+                <tr>
+                    <td colspan="7" class="text-center py-6 text-gray-500">Searching...</td>
+                </tr>`;
 
                     fetch(`{{ route('customers.search') }}?query=${encodeURIComponent(query)}`)
                         .then(response => response.json())
                         .then(data => {
                             const customers = data.data;
-                            console.log(customers)
                             if (!customers || customers.length === 0) {
                                 tableBody.innerHTML = `
-                                    <tr>
-                                        <td colspan="7" class="text-center py-6 text-gray-500">
-                                            No matching customers found.
-                                        </td>
-                                    </tr>`;
+                            <tr>
+                                <td colspan="7" class="text-center py-6 text-gray-500">
+                                    No matching customers found.
+                                </td>
+                            </tr>`;
                                 return;
                             }
 
                             tableBody.innerHTML = customers.map(c => `
-                                <tr class="hover:bg-gray-50 transition">
-                                    <td class="p-4 border-b">${c.name ?? 'N/A'}</td>
-                                    <td class="p-4 border-b">${c.email ?? 'N/A'}</td>
-                                    <td class="p-4 border-b">${c.company_name ?? 'N/A'}</td>
-                                    <td class="p-4 border-b">${c.address ?? 'N/A'}</td>
-                                    <td class="p-4 border-b">${c.country ?? 'N/A'}</td>
-                                    <td class="p-4 border-b">${c.invoices_count ?? 0}</td>
-                                    <td class="p-4 border-b text-right">
-                                        <a href="/customers/${c.id}" class="text-blue-600 hover:underline">View</a>
-                                    </td>
-                                </tr>
-                            `).join('');
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-4 border-b">${c.name ?? 'N/A'}</td>
+                            <td class="p-4 border-b">${c.email ?? 'N/A'}</td>
+                            <td class="p-4 border-b">${c.company_name ?? 'N/A'}</td>
+                            <td class="p-4 border-b">${c.address ?? 'N/A'}</td>
+                            <td class="p-4 border-b">${c.country ?? 'N/A'}</td>
+                            <td class="p-4 border-b">${c.invoices_count ?? 0}</td>
+                            <td class="p-4 border-b text-right">
+                                <a href="/customers/${c.id}" class="text-blue-600 hover:underline">View</a>
+                            </td>
+                        </tr>
+                    `).join('');
                         })
                         .catch(() => {
                             tableBody.innerHTML = `
-                                <tr>
-                                    <td colspan="7" class="text-center py-6 text-red-500">
-                                        Error loading data.
-                                    </td>
-                                </tr>`;
+                        <tr>
+                            <td colspan="7" class="text-center py-6 text-red-500">
+                                Error loading data.
+                            </td>
+                        </tr>`;
                         });
                 }, 300);
             });

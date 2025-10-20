@@ -23,6 +23,7 @@ class SettingController extends Controller
             'address'          => 'nullable|string',
             'invoice_notes'    => 'nullable|string',
             'invoice_terms'    => 'nullable|string',
+            'contact_email'    => 'nullable|string',
             'tax_percentage'   => 'nullable|numeric|min:0|max:100',
             'logo'             => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
         ]);

@@ -22,6 +22,10 @@
                             class="tab-btn flex items-center px-6 py-3 text-left text-gray-600 hover:bg-gray-100 hover:text-blue-600 border-l-4 border-transparent">
                         <i class="fas fa-plug mr-3"></i> Integrations
                     </button>
+                    <button id="tab-invoice"
+                            class="tab-btn flex items-center px-6 py-3 text-left text-gray-600 hover:bg-gray-100 hover:text-blue-600 border-l-4 border-transparent">
+                        <i class="fas fa-file-invoice-dollar mr-3"></i> Invoice Configuration
+                    </button>
                     <button id="tab-security"
                             class="tab-btn flex items-center px-6 py-3 text-left text-gray-600 hover:bg-gray-100 hover:text-blue-600 border-l-4 border-transparent">
                         <i class="fas fa-shield-alt mr-3"></i> Security
@@ -51,11 +55,14 @@
                             </div>
 
                             <div>
-                                <label class="block text-gray-600 font-medium mb-2">Tax ID</label>
-                                <input type="text" name="tax_id"
-                                       value="{{ old('tax_id', $setting->tax_id) }}"
-                                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <label class="block text-gray-600 font-medium mb-2">Company Email</label>
+                                <input type="email" name="contact_email"
+                                       value="{{ old('contact_email', $setting->contact_email) }}"
+                                       class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="info@company.com">
                             </div>
+
+
 
                             <div>
                                 <label class="block text-gray-600 font-medium mb-2">Country</label>
@@ -172,6 +179,64 @@
                         </button>
                     </form>
                 </div>
+
+                {{-- 🧾 Invoice Configuration --}}
+                {{-- 🧾 Invoice Configuration --}}
+                <div id="tab-content-invoice" class="hidden">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Invoice Configuration</h2>
+
+                    <form method="POST" action="/" class="space-y-6">
+                        @csrf
+
+                        <!-- Tax ID -->
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">Tax ID</label>
+                            <input type="text" name="tax_id_invoice"
+                                   value="{{ old('tax_id_invoice', $setting->tax_id) }}"
+                                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="123-456-789">
+                        </div>
+
+                        <!-- Switches -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <!-- Enable Terms & Conditions -->
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700 font-medium">Enable Terms & Conditions</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="enable_terms" value="1" class="sr-only peer" {{ old('enable_terms', $setting->enable_terms) ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                    <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                </label>
+                            </div>
+
+                            <!-- Enable Invoice Notes -->
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700 font-medium">Enable Invoice Notes</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="enable_invoice_notes" value="1" class="sr-only peer" {{ old('enable_invoice_notes', $setting->enable_invoice_notes) ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                    <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                </label>
+                            </div>
+
+                            <!-- Enable Tax -->
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700 font-medium">Enable Tax</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="enable_tax" value="1" class="sr-only peer" {{ old('enable_tax', $setting->enable_tax) ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                    <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all mt-4">
+                            Save Invoice Settings
+                        </button>
+                    </form>
+                </div>
+
             </div>
         </div>
     </div>
@@ -202,10 +267,12 @@
         const tabs = {
             org: document.getElementById('tab-org'),
             int: document.getElementById('tab-int'),
+            invoice: document.getElementById('tab-invoice'),
             sec: document.getElementById('tab-security'),
             noti: document.getElementById('tab-notifications'),
             contentOrg: document.getElementById('tab-content-org'),
             contentInt: document.getElementById('tab-content-int'),
+            contentInvoice: document.getElementById('tab-content-invoice'),
         };
 
         function switchTab(activeTab, activeContent) {
@@ -221,5 +288,6 @@
 
         tabs.org.addEventListener('click', () => switchTab(tabs.org, tabs.contentOrg));
         tabs.int.addEventListener('click', () => switchTab(tabs.int, tabs.contentInt));
+        tabs.invoice.addEventListener('click', () => switchTab(tabs.invoice, tabs.contentInvoice));
     </script>
 @endsection

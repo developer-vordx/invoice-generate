@@ -18,7 +18,8 @@ class Invoice extends Model
         'issue_date',
         'due_date',
         'status',
-        'note'
+        'note',
+        'user_responded'
     ];
 
     public function customer()

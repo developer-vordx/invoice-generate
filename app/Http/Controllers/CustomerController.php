@@ -13,9 +13,12 @@ class CustomerController extends Controller
 {
     public function index()
     {
+        // This ensures $customers is a LengthAwarePaginator
         $customers = Customer::with('invoices')->latest()->paginate(10);
         return view('customers.index', compact('customers'));
     }
+
+
 
     public function show(Customer $customer)
     {
@@ -25,27 +28,46 @@ class CustomerController extends Controller
 
     public function create()
     {
-        $customers = Customer::latest()->take(20)->get();
-
-        return view('invoices.create', compact('customers'));
+        return view('customers.create');
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:customers',
-            'phone' => 'nullable|string',
-            'street' => 'nullable|string',
-            'city' => 'nullable|string',
-            'state' => 'nullable|string',
-            'zip' => 'nullable|string',
-            'country' => 'nullable|string',
+        // Validate incoming request
+        $validatedData = $request->validate([
+            'name'              => 'required|string|max:255',
+            'company_name'      => 'nullable|string|max:255',
+            'email'             => 'required|email|unique:customers,email',
+            'phone_number'      => 'nullable|string|max:50',
+            'address'           => 'nullable|string|max:255',
+            'postal_code'       => 'nullable|string|max:20',
+            'city'              => 'nullable|string|max:100',
+            'state'             => 'nullable|string|max:100',
+            'country'           => 'nullable|string|max:100',
         ]);
 
-        Customer::create($data);
+        try {
+            // Optionally generate a Stripe customer ID (dummy example)
+            $validatedData['stripe_customer_id'] = 'cus_' . Str::random(12);
 
-        return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
+            // Create the customer
+            Customer::create($validatedData);
+
+            return redirect()
+                ->route('customers.index')
+                ->with('success', 'Customer created successfully.');
+        } catch (\Exception $e) {
+            // Log the error
+            Log::error('Customer creation failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'data'  => $validatedData,
+            ]);
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to create customer. Please try again or contact support.');
+        }
     }
 
     public function import(ImportCustomersRequest $request)

@@ -47,7 +47,7 @@
                             <div class="grid grid-cols-2 gap-6 mb-6">
                                 <div class="col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Select Customer</label>
-                                    <select id="customerSelect" class="w-full"></select>
+                                    <select id="customerSelect" name="customer_id" class="w-full"></select>
                                 </div>
                             </div>
 
@@ -57,6 +57,13 @@
                                     <input type="text" id="customer_name" name="name"
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
                                 </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                                    <input type="text" id="customer_company_name" name="company_name"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" >
+                                </div>
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                                     <input type="email" id="customer_email" name="email"
@@ -70,6 +77,12 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">City *</label>
                                     <input type="text" id="customer_city" name="city"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+                                    <input type="text" id="customer_country" name="country"
                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600" required>
                                 </div>
                             </div>
@@ -178,6 +191,8 @@
                                     email: c.email,
                                     address: c.address,
                                     city: c.city,
+                                    company_name: c.company_name,
+                                    country: c.country,
                                 }))
                             };
                         }
@@ -191,9 +206,11 @@
             $('#customerSelect').on('select2:select', function (e) {
                 const data = e.params.data;
                 $('#customer_name').val(data.name);
+                $('#customer_company_name').val(data.company_name);
                 $('#customer_email').val(data.email);
                 $('#customer_address').val(data.address);
                 $('#customer_city').val(data.city);
+                $('#customer_country').val(data.country);
             });
 
             // ✅ Add Line Item Section
