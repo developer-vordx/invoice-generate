@@ -36,7 +36,7 @@
             <h2 class="text-2xl font-bold text-center text-white mb-4">Verify Your Email</h2>
             <p class="text-center text-white mb-6">Enter the 6-digit code sent to your email.</p>
 
-            <form method="POST" action="{{ route('verification.verify') }}" class="space-y-4">
+            <form method="POST" action="/" class="space-y-4">
                 @csrf
                 <input type="text" name="otp" maxlength="6" required
                        class="w-full p-3 border border-gray-300 rounded-md text-center tracking-widest text-xl"
@@ -66,7 +66,7 @@
         messageBox.textContent = 'Sending...';
         messageBox.className = 'mt-2 text-sm text-gray-500';
 
-        fetch("{{ route('verification.send') }}", {
+        fetch("{{ route('login') }}", {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',

@@ -21,12 +21,12 @@
                         <i class="fas fa-ban mr-2"></i>Void
                     </button>
                 @endif
-                    <button id="sendEmailBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        <i class="fas fa-envelope mr-2"></i>Send Email
-                    </button>
-                    <button id="downloadPdfBtn" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                        <i class="fas fa-download mr-2"></i>Download PDF
-                    </button>
+                <button id="sendEmailBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-envelope mr-2"></i>Send Email
+                </button>
+                <button id="downloadPdfBtn" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    <i class="fas fa-download mr-2"></i>Download PDF
+                </button>
             </div>
         </div>
     </header>
@@ -34,15 +34,30 @@
     <!-- Invoice Content -->
     <main class="flex-1 overflow-y-auto p-8">
         <div class="max-w-4xl mx-auto bg-white p-12 rounded-xl shadow-sm border border-gray-100" id="invoiceContent">
+
+            <!-- Header Section -->
             <div class="flex justify-between mb-12">
                 <div>
                     <h1 class="text-4xl font-bold text-gray-800 mb-2">INVOICE</h1>
                     <p class="text-lg text-gray-600">#INV-{{ $invoice->invoice_number }}</p>
                 </div>
                 <div class="text-right">
-                    <h2 class="text-xl font-bold text-gray-800">{{ config('app.name') }}</h2>
-                    <p class="text-gray-600">123 Business Center, City</p>
-                    <p class="text-gray-600">info@reconx.com</p>
+                    @if(!empty($globalSettings->logo_path))
+                        <img src="{{ asset($globalSettings->logo_path) }}" alt="Logo" class="h-12 mb-2 ml-auto">
+                    @endif
+                    <h2 class="text-xl font-bold text-gray-800">{{ $globalSettings->company_name ?? config('app.name') }}</h2>
+                    <p class="text-gray-600">{{ $globalSettings->address ?? '' }}</p>
+                    @if($globalSettings->tax_id)
+                        <p class="text-gray-600">Tax ID: {{ $globalSettings->tax_id }}</p>
+                    @endif
+                    @if($globalSettings->contact_email)
+                        <p class="text-gray-600">
+                            Email:
+                            <a href="mailto:{{ $globalSettings->contact_email }}" class="text-blue-600 hover:underline">
+                                {{ $globalSettings->contact_email }}
+                            </a>
+                        </p>
+                    @endif
                 </div>
             </div>
 
@@ -81,6 +96,9 @@
             </div>
 
             <!-- Line Items -->
+            @php
+                $currency = $globalSettings->base_currency ?? '$';
+            @endphp
             <table class="w-full mb-8">
                 <thead class="border-b-2 border-gray-300">
                 <tr class="text-left">
@@ -95,60 +113,67 @@
                     <tr>
                         <td>{{ $item->activity }}</td>
                         <td class="text-center">{{ $item->quantity }}</td>
-                        <td class="text-right">${{ number_format($item->amount, 2) }}</td>
-                        <td class="text-right">${{ number_format($item->quantity * $item->amount, 2) }}</td>
+                        <td class="text-right">{{ $currency }}{{ number_format($item->amount, 2) }}</td>
+                        <td class="text-right">{{ $currency }}{{ number_format($item->quantity * $item->amount, 2) }}</td>
                     </tr>
                 @endforeach
                 </tbody>
             </table>
 
             <!-- Totals -->
-            <?php
-            $subtotal = $invoice->items->sum(function($item) {
-                return $item->quantity * $item->amount;
-            });
-            $taxRate = 0.1;
-            $taxAmount = $subtotal * $taxRate;
-            $total = $subtotal + $taxAmount;
-            ?>
+            @php
+                $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
+                $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
+                $taxAmount = $subtotal * $taxRate;
+                $total = $subtotal + $taxAmount;
+            @endphp
 
             <div class="flex justify-end mb-12">
                 <div class="w-64">
                     <div class="flex justify-between py-2 border-t border-gray-200">
                         <span class="font-semibold">Subtotal:</span>
-                        <span>${{ number_format($subtotal, 2) }}</span>
+                        <span>{{ $currency }}{{ number_format($subtotal, 2) }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-t border-gray-200">
-                        <span class="font-semibold">Tax ({{ $taxRate * 100 }}%):</span>
-                        <span>${{ number_format($taxAmount, 2) }}</span>
+                        <span class="font-semibold">Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</span>
+                        <span>{{ $currency }}{{ number_format($taxAmount, 2) }}</span>
                     </div>
                     <div class="flex justify-between py-3 border-t-2 border-gray-800 text-xl font-bold">
                         <span>Total:</span>
-                        <span>${{ number_format($total, 2) }}</span>
+                        <span>{{ $currency }}{{ number_format($total, 2) }}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Notes & Terms -->
             <div class="mt-8 border-t border-gray-200 pt-8 text-sm">
-                <div class="mb-6">
-                    <h3 class="font-bold text-gray-800 mb-2">Notes</h3>
-                    <p class="text-gray-600">{{ $invoice->note ?? 'No notes provided.' }}</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-2">Terms & Conditions</h3>
-                    <ul class="list-disc pl-6 text-gray-600 space-y-2">
-                        <li>Payment within 15 days</li>
-                        <li>5% late fee</li>
-                        <li>Non-refundable after 30 days</li>
-                    </ul>
-                </div>
+
+                {{-- Notes Section --}}
+                @if(!empty($globalSettings->invoice_notes))
+                    <div class="mb-6">
+                        <h3 class="font-bold text-gray-800 mb-2">Notes</h3>
+                        <p class="text-gray-600 whitespace-pre-line">
+                            {{ $globalSettings->invoice_notes }}
+                        </p>
+                    </div>
+                @endif
+
+                {{-- Terms & Conditions Section --}}
+                @if(!empty($globalSettings->invoice_terms))
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-2">Terms & Conditions</h3>
+                        <p class="text-gray-600 whitespace-pre-line">
+                            {{ $globalSettings->invoice_terms }}
+                        </p>
+                    </div>
+                @endif
+
             </div>
+
         </div>
     </main>
 
-    <!-- Optional JavaScript -->
-    <!-- Optional JavaScript -->
+    <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -164,7 +189,6 @@
                 confirmButtonColor: '#d33'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // TODO: Send AJAX to void invoice
                     Swal.fire('Voided!', 'Invoice has been voided successfully.', 'success');
                 }
             });
@@ -238,12 +262,10 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Convert base64 to blob and trigger download
                             const link = document.createElement('a');
                             link.href = 'data:application/pdf;base64,' + data.fileData;
                             link.download = data.fileName;
                             link.click();
-
                             Swal.fire('Success!', data.message, 'success');
                         } else {
                             Swal.fire('Failed!', data.message || 'Failed to generate PDF.', 'error');

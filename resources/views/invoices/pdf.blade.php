@@ -25,12 +25,13 @@
         .totals tr.total td { font-weight: bold; font-size: 16px; border-top: 2px solid #000; }
 
         .notes h3 { margin-bottom: 5px; }
-        .notes ul { margin: 0; padding-left: 20px; }
+        .notes p, .notes ul { margin: 0; padding-left: 20px; }
         .status { display: inline-block; padding: 3px 8px; font-size: 10px; color: #fff; background-color: #4a90e2; border-radius: 4px; }
     </style>
 </head>
 <body>
 <div class="container">
+
     <!-- Header -->
     <div class="header">
         <table>
@@ -40,9 +41,11 @@
                     <p>#INV-{{ $invoice->invoice_number }}</p>
                 </td>
                 <td style="text-align:right;">
-                    <strong>{{ config('app.name') }}</strong><br>
-                    123 Business Center, City<br>
-                    info@reconx.com
+                    <strong>{{ $globalSettings->company_name ?? config('app.name') }}</strong><br>
+                    {{ $globalSettings->address ?? '' }}<br>
+                    @if(!empty($globalSettings->contact_email))
+                        {{ $globalSettings->contact_email }}
+                    @endif
                 </td>
             </tr>
         </table>
@@ -96,8 +99,8 @@
                 <tr>
                     <td>{{ $item->activity }}</td>
                     <td>{{ $item->quantity }}</td>
-                    <td>${{ number_format($item->amount, 2) }}</td>
-                    <td>${{ number_format($item->quantity * $item->amount, 2) }}</td>
+                    <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($item->amount, 2) }}</td>
+                    <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($item->quantity * $item->amount, 2) }}</td>
                 </tr>
             @endforeach
             </tbody>
@@ -107,43 +110,45 @@
     <div class="section-divider"></div>
 
     <!-- Totals -->
-    <?php
-    $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-    $taxRate = 0.1;
-    $taxAmount = $subtotal * $taxRate;
-    $total = $subtotal + $taxAmount;
-    ?>
+    @php
+        $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
+        $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
+        $taxAmount = $subtotal * $taxRate;
+        $total = $subtotal + $taxAmount;
+    @endphp
+
     <div class="totals">
         <table>
             <tr>
                 <td>Subtotal:</td>
-                <td>${{ number_format($subtotal, 2) }}</td>
+                <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($subtotal, 2) }}</td>
             </tr>
             <tr>
-                <td>Tax ({{ $taxRate*100 }}%):</td>
-                <td>${{ number_format($taxAmount, 2) }}</td>
+                <td>Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</td>
+                <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($taxAmount, 2) }}</td>
             </tr>
             <tr class="total">
                 <td>Total:</td>
-                <td>${{ number_format($total, 2) }}</td>
+                <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($total, 2) }}</td>
             </tr>
         </table>
     </div>
 
     <div class="section-divider" style="clear:both;"></div>
 
-    <!-- Notes -->
+    <!-- Notes & Terms -->
     <div class="notes">
-        <h3>Notes</h3>
-        <p>{{ $invoice->note ?? 'No notes provided.' }}</p>
+        @if(!empty($globalSettings->invoice_notes))
+            <h3>Notes</h3>
+            <p style="white-space: pre-line;">{{ $globalSettings->invoice_notes }}</p>
+        @endif
 
-        <h3>Terms & Conditions</h3>
-        <ul>
-            <li>Payment within 15 days</li>
-            <li>5% late fee</li>
-            <li>Non-refundable after 30 days</li>
-        </ul>
+        @if(!empty($globalSettings->invoice_terms))
+            <h3>Terms & Conditions</h3>
+            <p style="white-space: pre-line;">{{ $globalSettings->invoice_terms }}</p>
+        @endif
     </div>
+
 </div>
 </body>
 </html>

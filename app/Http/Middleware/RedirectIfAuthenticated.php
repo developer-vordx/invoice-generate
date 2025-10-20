@@ -29,8 +29,13 @@ class RedirectIfAuthenticated
                     return redirect()->route('dashboard');
                 }
 
-                // ✅ If user email not verified
-                return redirect()->route('verification.notice');
+                // 🚫 If user email not verified — logout & redirect to login
+                Auth::guard($guard)->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('login')
+                    ->with('error', 'Your email is not verified. Please log in again after verification.');
             }
         }
 

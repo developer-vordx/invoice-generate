@@ -70,17 +70,17 @@
                                 <select name="base_currency"
                                         class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
                                     <option value="">-- Select Currency --</option>
-                                    <option value="USD" {{ old('base_currency', $setting->base_currency) === 'USD' ? 'selected' : '' }}>🇺🇸 USD — US Dollar ($)</option>
-                                    <option value="EUR" {{ old('base_currency', $setting->base_currency) === 'EUR' ? 'selected' : '' }}>🇪🇺 EUR — Euro (€)</option>
-                                    <option value="GBP" {{ old('base_currency', $setting->base_currency) === 'GBP' ? 'selected' : '' }}>🇬🇧 GBP — British Pound (£)</option>
-                                    <option value="INR" {{ old('base_currency', $setting->base_currency) === 'INR' ? 'selected' : '' }}>🇮🇳 INR — Indian Rupee (₹)</option>
-                                    <option value="CAD" {{ old('base_currency', $setting->base_currency) === 'CAD' ? 'selected' : '' }}>🇨🇦 CAD — Canadian Dollar (C$)</option>
-                                    <option value="AUD" {{ old('base_currency', $setting->base_currency) === 'AUD' ? 'selected' : '' }}>🇦🇺 AUD — Australian Dollar (A$)</option>
-                                    <option value="JPY" {{ old('base_currency', $setting->base_currency) === 'JPY' ? 'selected' : '' }}>🇯🇵 JPY — Japanese Yen (¥)</option>
-                                    <option value="CNY" {{ old('base_currency', $setting->base_currency) === 'CNY' ? 'selected' : '' }}>🇨🇳 CNY — Chinese Yuan (¥)</option>
-                                    <option value="CHF" {{ old('base_currency', $setting->base_currency) === 'CHF' ? 'selected' : '' }}>🇨🇭 CHF — Swiss Franc (Fr)</option>
-                                    <option value="NZD" {{ old('base_currency', $setting->base_currency) === 'NZD' ? 'selected' : '' }}>🇳🇿 NZD — New Zealand Dollar (NZ$)</option>
-                                    <option value="SGD" {{ old('base_currency', $setting->base_currency) === 'SGD' ? 'selected' : '' }}>🇸🇬 SGD — Singapore Dollar (S$)</option>
+                                    <option value="$" {{ old('base_currency', $setting->base_currency) === '$' ? 'selected' : '' }}>🇺🇸 USD — $</option>
+                                    <option value="€" {{ old('base_currency', $setting->base_currency) === '€' ? 'selected' : '' }}>🇪🇺 EUR — €</option>
+                                    <option value="£" {{ old('base_currency', $setting->base_currency) === '£' ? 'selected' : '' }}>🇬🇧 GBP — £</option>
+                                    <option value="₹" {{ old('base_currency', $setting->base_currency) === '₹' ? 'selected' : '' }}>🇮🇳 INR — ₹</option>
+                                    <option value="C$" {{ old('base_currency', $setting->base_currency) === 'C$' ? 'selected' : '' }}>🇨🇦 CAD — C$</option>
+                                    <option value="A$" {{ old('base_currency', $setting->base_currency) === 'A$' ? 'selected' : '' }}>🇦🇺 AUD — A$</option>
+                                    <option value="¥" {{ old('base_currency', $setting->base_currency) === '¥' ? 'selected' : '' }}>🇯🇵 JPY — ¥</option>
+                                    <option value="¥" {{ old('base_currency', $setting->base_currency) === '¥' ? 'selected' : '' }}>🇨🇳 CNY — ¥</option>
+                                    <option value="Fr" {{ old('base_currency', $setting->base_currency) === 'Fr' ? 'selected' : '' }}>🇨🇭 CHF — Fr</option>
+                                    <option value="NZ$" {{ old('base_currency', $setting->base_currency) === 'NZ$' ? 'selected' : '' }}>🇳🇿 NZD — NZ$</option>
+                                    <option value="S$" {{ old('base_currency', $setting->base_currency) === 'S$' ? 'selected' : '' }}>🇸🇬 SGD — S$</option>
                                 </select>
                             </div>
                         </div>
@@ -111,8 +111,14 @@
 
                         <div>
                             <label class="block text-gray-600 font-medium mb-2">Invoice Notes</label>
-                            <textarea name="notes" rows="3"
-                                      class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('notes', $setting->notes) }}</textarea>
+                            <textarea name="invoice_notes" rows="3"
+                                      class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('invoice_notes', $setting->invoice_notes) }}</textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">Terms & Conditions</label>
+                            <textarea name="invoice_terms" rows="4"
+                                      class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('invoice_terms', $setting->invoice_terms) }}</textarea>
                         </div>
 
                         <button type="submit"

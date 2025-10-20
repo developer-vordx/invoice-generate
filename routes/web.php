@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 | Guest Routes (only accessible when not logged in)
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('guest')->group(function () {
 
     // Login & Register Views
@@ -31,7 +32,6 @@ Route::middleware('guest')->group(function () {
     })->name('password.reset');
 
     // Email Verification View
-    Route::view('/verify-email', 'auth.verify-email')->name('verification.notice');
 
     // Authentication Actions
     Route::post('/register', [AuthController::class, 'register'])->name('submit.register');
@@ -77,7 +77,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/invite', [UserController::class, 'invite'])->name('users.invite');
     Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
     Route::get('customer/search', [CustomerController::class, 'search'])->name('customers.search');
+    Route::get('/customers/fetch', [App\Http\Controllers\Ajax\CustomerController::class, 'fetch'])->name('customers.fetch');
+
     Route::resource('products', ProductController::class);
+    // AJAX product search and fetch
+    Route::get('/product/fetch', [App\Http\Controllers\Ajax\ProductController::class, 'fetch'])->name('products.fetch');
+    Route::get('/product/search', [App\Http\Controllers\Ajax\ProductController::class, 'search'])->name('products.search');
 
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');

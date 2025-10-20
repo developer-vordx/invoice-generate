@@ -56,21 +56,38 @@
             padding: 20px;
             font-size: 13px;
             color: #999;
+            background-color: #fafafa;
+            border-top: 1px solid #eee;
+        }
+        .notes, .terms {
+            margin-top: 25px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555;
+        }
+        .notes h3, .terms h3 {
+            color: #333;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <h2>{{ config('app.name') }}</h2>
+        @if(!empty($globalSettings->logo_path))
+            <img src="{{ asset($globalSettings->logo_path) }}" alt="Logo" style="height: 50px; margin-bottom: 10px;">
+        @endif
+        <h2>{{ $globalSettings->company_name ?? config('app.name') }}</h2>
     </div>
+
     <div class="content">
         <h1>Hello {{ $invoice->customer->name ?? 'Customer' }},</h1>
         <p>We’ve generated your invoice <strong>#INV-{{ $invoice->invoice_number }}</strong>.</p>
 
         <div class="invoice-summary">
             <h3>Invoice Summary</h3>
-            <p><strong>Amount:</strong> ${{ number_format($invoice->amount, 2) }}</p>
+            <p><strong>Amount:</strong>
+                {{ $globalSettings->base_currency ?? '$' }}{{ number_format($invoice->amount, 2) }}</p>
             <p><strong>Status:</strong> {{ ucfirst($invoice->status) }}</p>
             <p><strong>Due Date:</strong> {{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</p>
         </div>
@@ -79,10 +96,35 @@
 
         <p style="margin-top: 20px;">A PDF copy of your invoice is attached for your convenience.</p>
 
-        <p>Thanks for your business!<br><strong>{{ config('app.name') }}</strong></p>
+        {{-- Notes --}}
+        @if(!empty($globalSettings->invoice_notes))
+            <div class="notes">
+                <h3>Notes</h3>
+                <p>{{ $globalSettings->invoice_notes }}</p>
+            </div>
+        @endif
+
+        {{-- Terms & Conditions --}}
+        @if(!empty($globalSettings->invoice_terms))
+            <div class="terms">
+                <h3>Terms & Conditions</h3>
+                <p>{{ $globalSettings->invoice_terms }}</p>
+            </div>
+        @endif
+
+        <p style="margin-top: 25px;">Thanks for your business!<br>
+            <strong>{{ $globalSettings->company_name ?? config('app.name') }}</strong><br>
+            @if(!empty($globalSettings->address))
+                {{ $globalSettings->address }}<br>
+            @endif
+            @if(!empty($globalSettings->contact_email))
+                <a href="mailto:{{ $globalSettings->contact_email }}">{{ $globalSettings->contact_email }}</a>
+            @endif
+        </p>
     </div>
+
     <div class="footer">
-        &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+        &copy; {{ date('Y') }} {{ $globalSettings->company_name ?? config('app.name') }}. All rights reserved.
     </div>
 </div>
 </body>
