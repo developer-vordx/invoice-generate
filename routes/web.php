@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/organization', [SettingController::class, 'updateOrganization'])->name('settings.organization.update');
     Route::post('/settings/integration', [SettingController::class, 'updateIntegration'])->name('settings.integration.update');
+    Route::post('/settings/invoice', [SettingController::class, 'updateInvoice'])->name('settings.invoice.update');
     Route::get('/help', function () {
         return view('help');
     })->name('help');

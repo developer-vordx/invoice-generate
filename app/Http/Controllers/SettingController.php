@@ -55,4 +55,28 @@ class SettingController extends Controller
 
         return back()->with('success', 'Integration settings updated successfully.');
     }
+
+    public function updateInvoice(Request $request)
+    {
+        $validated = $request->validate([
+            'tax_id_invoice' => 'nullable|string|max:255',
+            'enable_tax_id' => 'nullable|boolean',
+            'enable_terms' => 'nullable|boolean',
+            'enable_invoice_notes' => 'nullable|boolean',
+            'enable_tax' => 'nullable|boolean',
+        ]);
+
+        $setting = Setting::firstOrNew();
+
+        $setting->fill([
+            'tax_id_invoice' => $validated['tax_id_invoice'] ?? null,
+            'enable_tax_id' => $request->has('enable_tax_id'),
+            'enable_terms' => $request->has('enable_terms'),
+            'enable_invoice_notes' => $request->has('enable_invoice_notes'),
+            'enable_tax' => $request->has('enable_tax'),
+        ])->save();
+
+        return back()->with('success', 'Invoice settings updated successfully.');
+    }
+
 }

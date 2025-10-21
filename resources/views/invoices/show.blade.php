@@ -47,9 +47,11 @@
                     @endif
                     <h2 class="text-xl font-bold text-gray-800">{{ $globalSettings->company_name ?? config('app.name') }}</h2>
                     <p class="text-gray-600">{{ $globalSettings->address ?? '' }}</p>
-                    @if($globalSettings->tax_id)
-                        <p class="text-gray-600">Tax ID: {{ $globalSettings->tax_id }}</p>
+
+                    @if($globalSettings->enable_tax_id && !empty($globalSettings->tax_id))
+                            <p class="text-gray-600">Tax ID: {{ $globalSettings->tax_id }}</p>
                     @endif
+
                     @if($globalSettings->contact_email)
                         <p class="text-gray-600">
                             Email:
@@ -123,10 +125,17 @@
             <!-- Totals -->
             @php
                 $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-                $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
-                $taxAmount = $subtotal * $taxRate;
+                // Apply tax only if "Enable Tax" is turned ON in settings
+                if (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax) {
+                    $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
+                    $taxAmount = $subtotal * $taxRate;
+                } else {
+                    $taxRate = 0;
+                    $taxAmount = 0;
+                }
                 $total = $subtotal + $taxAmount;
             @endphp
+
 
             <div class="flex justify-end mb-12">
                 <div class="w-64">
@@ -134,10 +143,13 @@
                         <span class="font-semibold">Subtotal:</span>
                         <span>{{ $currency }}{{ number_format($subtotal, 2) }}</span>
                     </div>
-                    <div class="flex justify-between py-2 border-t border-gray-200">
-                        <span class="font-semibold">Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</span>
-                        <span>{{ $currency }}{{ number_format($taxAmount, 2) }}</span>
-                    </div>
+                    @if($globalSettings->enable_tax)
+                        <div class="flex justify-between py-2 border-t border-gray-200">
+                            <span class="font-semibold">Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</span>
+                            <span>{{ $currency }}{{ number_format($taxAmount, 2) }}</span>
+                        </div>
+                    @endif
+
                     <div class="flex justify-between py-3 border-t-2 border-gray-800 text-xl font-bold">
                         <span>Total:</span>
                         <span>{{ $currency }}{{ number_format($total, 2) }}</span>
@@ -149,7 +161,7 @@
             <div class="mt-8 border-t border-gray-200 pt-8 text-sm">
 
                 {{-- Notes Section --}}
-                @if(!empty($globalSettings->invoice_notes))
+                @if($globalSettings->enable_invoice_notes && !empty($globalSettings->invoice_notes))
                     <div class="mb-6">
                         <h3 class="font-bold text-gray-800 mb-2">Notes</h3>
                         <p class="text-gray-600 whitespace-pre-line">
@@ -159,7 +171,7 @@
                 @endif
 
                 {{-- Terms & Conditions Section --}}
-                @if(!empty($globalSettings->invoice_terms))
+                @if($globalSettings->enable_terms && !empty($globalSettings->invoice_terms))
                     <div>
                         <h3 class="font-bold text-gray-800 mb-2">Terms & Conditions</h3>
                         <p class="text-gray-600 whitespace-pre-line">

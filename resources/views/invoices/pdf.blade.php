@@ -112,8 +112,15 @@
     <!-- Totals -->
     @php
         $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-        $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
-        $taxAmount = $subtotal * $taxRate;
+                // Apply tax only if "Enable Tax" is turned ON in settings
+        if (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax) {
+            $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
+            $taxAmount = $subtotal * $taxRate;
+        } else {
+            $taxRate = 0;
+            $taxAmount = 0;
+        }
+
         $total = $subtotal + $taxAmount;
     @endphp
 
@@ -124,8 +131,10 @@
                 <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($subtotal, 2) }}</td>
             </tr>
             <tr>
-                <td>Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</td>
-                <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($taxAmount, 2) }}</td>
+                @if($globalSettings->enable_tax)
+                    <td>Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</td>
+                    <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($taxAmount, 2) }}</td>
+                @endif
             </tr>
             <tr class="total">
                 <td>Total:</td>
@@ -138,12 +147,12 @@
 
     <!-- Notes & Terms -->
     <div class="notes">
-        @if(!empty($globalSettings->invoice_notes))
+        @if($globalSettings->enable_invoice_notes && !empty($globalSettings->invoice_notes))
             <h3>Notes</h3>
             <p style="white-space: pre-line;">{{ $globalSettings->invoice_notes }}</p>
         @endif
 
-        @if(!empty($globalSettings->invoice_terms))
+        @if($globalSettings->enable_terms && !empty($globalSettings->invoice_terms))
             <h3>Terms & Conditions</h3>
             <p style="white-space: pre-line;">{{ $globalSettings->invoice_terms }}</p>
         @endif

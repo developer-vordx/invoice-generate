@@ -181,11 +181,10 @@
                 </div>
 
                 {{-- 🧾 Invoice Configuration --}}
-                {{-- 🧾 Invoice Configuration --}}
                 <div id="tab-content-invoice" class="hidden">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Invoice Configuration</h2>
 
-                    <form method="POST" action="/" class="space-y-6">
+                    <form method="POST" action="{{ route('settings.invoice.update') }}" class="space-y-6">
                         @csrf
 
                         <!-- Tax ID -->
@@ -224,6 +223,17 @@
                                 <span class="text-gray-700 font-medium">Enable Tax</span>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" name="enable_tax" value="1" class="sr-only peer" {{ old('enable_tax', $setting->enable_tax) ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                    <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                </label>
+                            </div>
+
+                            <!-- Enable Tax ID -->
+                            <div class="flex items-center justify-between mt-3">
+                                <span class="text-gray-700 font-medium">Enable Tax ID</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="enable_tax_id" value="1" class="sr-only peer"
+                                        {{ old('enable_tax_id', $setting->enable_tax_id) ? 'checked' : '' }}>
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
                                     <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
                                 </label>

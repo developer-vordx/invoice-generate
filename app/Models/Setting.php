@@ -22,8 +22,11 @@ class Setting extends Model
         'webhook_url',
         'webhook_secret',
         'contact_email',
+        'enable_terms',
+        'enable_invoice_notes',
+        'enable_tax',
+        'enable_tax_id',
     ];
-
 
     protected static function booted()
     {
