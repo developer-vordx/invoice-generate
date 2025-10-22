@@ -41,14 +41,14 @@
                            placeholder="Enter product name" required>
                 </div>
 
-                {{-- SKU --}}
+                {{-- Category --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-barcode mr-1 text-blue-600"></i> SKU (Optional)
+                        <i class="fas fa-list mr-1 text-blue-600"></i> Category
                     </label>
-                    <input type="text" name="sku" value="{{ old('sku') }}"
+                    <input type="text" name="category" value="{{ old('category') }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-400"
-                           placeholder="SKU code or identifier">
+                           placeholder="Enter category name" required>
                 </div>
 
                 {{-- Price --}}
@@ -61,14 +61,16 @@
                            placeholder="e.g. 199.99" required>
                 </div>
 
-                {{-- Stock --}}
+                {{-- Active Status --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-boxes mr-1 text-blue-600"></i> Stock
+                        <i class="fas fa-toggle-on mr-1 text-blue-600"></i> Active Status
                     </label>
-                    <input type="number" name="stock" value="{{ old('stock', 0) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-400"
-                           placeholder="Available stock quantity">
+                    <select name="is_active"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                        <option value="1" {{ old('is_active') == 1 ? 'selected' : '' }}>Active</option>
+                        <option value="0" {{ old('is_active') == 0 ? 'selected' : '' }}>Inactive</option>
+                    </select>
                 </div>
             </div>
 

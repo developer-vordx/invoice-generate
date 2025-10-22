@@ -45,14 +45,14 @@
                            placeholder="Enter product name" required>
                 </div>
 
-                {{-- SKU --}}
+                {{-- Category --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-barcode text-blue-600 mr-1"></i> SKU
+                        <i class="fas fa-list text-blue-600 mr-1"></i> Category
                     </label>
-                    <input type="text" name="sku" value="{{ old('sku', $product->sku) }}"
+                    <input type="text" name="category" value="{{ old('category', $product->category) }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-400"
-                           placeholder="e.g. PROD-001">
+                           placeholder="Enter category name" required>
                 </div>
 
                 {{-- Price --}}
@@ -65,14 +65,16 @@
                            placeholder="e.g. 199.99" required>
                 </div>
 
-                {{-- Stock --}}
+                {{-- Active Status --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-boxes text-blue-600 mr-1"></i> Stock
+                        <i class="fas fa-toggle-on text-blue-600 mr-1"></i> Active Status
                     </label>
-                    <input type="number" name="stock" value="{{ old('stock', $product->stock) }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-400"
-                           placeholder="Stock quantity">
+                    <select name="is_active"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                        <option value="1" {{ old('is_active', $product->is_active) == 1 ? 'selected' : '' }}>Active</option>
+                        <option value="0" {{ old('is_active', $product->is_active) == 0 ? 'selected' : '' }}>Inactive</option>
+                    </select>
                 </div>
             </div>
 
@@ -84,20 +86,6 @@
                 <textarea name="description" rows="4"
                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent placeholder-gray-400 resize-none"
                           placeholder="Write a short description about this product...">{{ old('description', $product->description) }}</textarea>
-            </div>
-
-            {{-- Active Toggle --}}
-            <div class="mt-6 flex items-center justify-between">
-                <label class="flex items-center space-x-3">
-                    <input type="checkbox" name="is_active" value="1" class="hidden peer" {{ $product->is_active ? 'checked' : '' }}>
-                    <div class="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-blue-600 relative transition">
-                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition"></div>
-                    </div>
-                    <span class="text-sm text-gray-700 font-medium">Active</span>
-                </label>
-                <p class="text-gray-400 text-sm italic">
-                    {{ $product->is_active ? 'Currently visible in your catalog' : 'Currently hidden from your catalog' }}
-                </p>
             </div>
 
             {{-- Buttons --}}

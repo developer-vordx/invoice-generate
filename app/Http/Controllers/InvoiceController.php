@@ -49,7 +49,6 @@ class InvoiceController extends Controller
             'email' => 'required|email',
             'address' => 'required|string',
             'city' => 'required|string',
-            'country' => 'required|string',
             'customer_id' => 'required|integer|exists:customers,id',
             'invoice_number' => 'required|string|unique:invoices,invoice_number',
             'issue_date' => 'required|date',
@@ -68,7 +67,7 @@ class InvoiceController extends Controller
                 ['name' => $request->input('name'),
                     'address' => $request->input('address'),
                     'city' => $request->input('city'),
-                    'country' => $request->input('country')
+                    'country' => 'USA'
                 ]
             );
 

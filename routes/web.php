@@ -96,6 +96,7 @@ Route::middleware('auth')->group(function () {
 
 
     // AJAX product search and fetch
+    Route::post('products/import', [App\Http\Controllers\Ajax\ProductController::class, 'import'])->name('products.import');
     Route::get('/products/fetch', [App\Http\Controllers\Ajax\ProductController::class, 'fetch'])->name('products.fetch');
     Route::get('/products/search', [App\Http\Controllers\Ajax\ProductController::class, 'search'])->name('products.search');
     Route::resource('products', ProductController::class);

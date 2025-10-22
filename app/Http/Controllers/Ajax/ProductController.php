@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Ajax;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportCustomersRequest;
+use App\Models\Customer;
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -85,6 +89,86 @@ class ProductController extends Controller
         } catch (\Throwable $e) {
             Log::error('Error during product search: ' . $e->getMessage());
             return response()->json(['success' => false, 'error' => 'Search failed.'], 500);
+        }
+    }
+
+
+     public function import(ImportCustomersRequest $request)
+    {
+        try {
+            // Ensure file exists and is readable
+            if (!$request->hasFile('file')) {
+                throw new Exception('No file uploaded.');
+            }
+
+            $path = $request->file('file')->getRealPath();
+
+            if (!file_exists($path)) {
+                throw new Exception('Uploaded file not found on server.');
+            }
+
+            $file = fopen($path, 'r');
+            if (!$file) {
+                throw new Exception('Unable to open the uploaded file.');
+            }
+
+            $header = fgetcsv($file);
+
+            if (!$header || count($header) === 0) {
+                throw new Exception('The CSV file appears to be empty or missing headers.');
+            }
+
+            // Normalize header keys (trim, lowercase, replace spaces with underscores)
+            $header = array_map(fn($h) => Str::slug(trim($h), '_'), $header);
+
+            $count = 0;
+            $skipped = 0;
+
+            while (($row = fgetcsv($file)) !== false) {
+                $data = @array_combine($header, $row);
+
+                if (!$data) {
+                    $skipped++;
+                    continue;
+                }
+
+                if (empty($data['productservice_name'])) {
+                    $skipped++;
+                    continue; // Skip invalid or empty email rows
+                }
+
+                Product::updateOrCreate(
+                    ['name' => trim($data['productservice_name'])],
+                    [
+                        'description' => $data['sales_description']  ?? null,
+                        'price' => $data['price'] ?? null,
+                        'category' => $data['category'] ?? null,
+                    ]
+                );
+
+                $count++;
+            }
+
+            fclose($file);
+
+            $message = "{$count} products imported successfully.";
+            if ($skipped > 0) {
+                $message .= " {$skipped} rows were skipped due to missing or invalid data.";
+            }
+
+            return redirect()
+                ->route('products.index')
+                ->with('success', $message);
+        } catch (Exception $e) {
+            // Log detailed error for developers
+            Log::error('products import failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Return user-friendly error message
+            return redirect()
+                ->back()
+                ->with('error', 'There was an error importing the products: ' . $e->getMessage());
         }
     }
 }

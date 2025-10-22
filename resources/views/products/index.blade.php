@@ -6,11 +6,16 @@
     <div class="w-full max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Products</h1>
+
             <div class="space-x-2">
+                <button id="importCsvBtn"  class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-file-import mr-2"></i> Import CSV
+                </button>
                 <a href="{{ route('products.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                     <i class="fas fa-plus mr-2"></i> Add Product
                 </a>
             </div>
+
         </div>
 
         @if(session('success'))
@@ -25,9 +30,8 @@
                 <thead>
                 <tr class="bg-gray-50 text-left text-gray-600 uppercase text-sm">
                     <th class="p-4 border-b">Name</th>
-                    <th class="p-4 border-b">SKU</th>
+                    <th class="p-4 border-b">Category</th>
                     <th class="p-4 border-b">Price</th>
-                    <th class="p-4 border-b">Stock</th>
                     <th class="p-4 border-b">Status</th>
                     <th class="p-4 border-b text-right">Actions</th>
                 </tr>
@@ -36,9 +40,8 @@
                 @forelse($products as $product)
                     <tr class="hover:bg-gray-50 transition">
                         <td class="p-4 border-b">{{ $product->name }}</td>
-                        <td class="p-4 border-b">{{ $product->sku ?? 'N/A' }}</td>
+                        <td class="p-4 border-b">{{ $product->category ?? 'N/A' }}</td>
                         <td class="p-4 border-b">${{ number_format($product->price, 2) }}</td>
-                        <td class="p-4 border-b">{{ $product->stock }}</td>
                         <td class="p-4 border-b">
                             @if($product->is_active)
                                 <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">Active</span>
@@ -67,5 +70,40 @@
         <div class="mt-4">
             {{ $products->links('vendor.pagination.tailwind') }}
         </div>
+        <!-- Import CSV Modal -->
+        <div id="importCsvModal"
+             class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white p-8 rounded-xl w-full max-w-md shadow-lg">
+                <h2 class="text-lg font-semibold mb-4">Import Products (CSV)</h2>
+                <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="file" name="file" accept=".csv" required
+                           class="w-full border rounded-lg p-2 mb-4">
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" id="closeImportModal"
+                                class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                            Upload
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Import Modal Control
+            const modal = document.getElementById('importCsvModal');
+            const openModalBtn = document.getElementById('importCsvBtn');
+            const closeModalBtn = document.getElementById('closeImportModal');
+
+            openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+            closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+        });
+    </script>
 @endsection

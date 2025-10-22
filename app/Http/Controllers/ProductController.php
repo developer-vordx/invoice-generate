@@ -37,20 +37,19 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'nullable|string|max:255|unique:products,sku',
             'price' => 'required|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
+            'category' => 'nullable|integer|min:0',
             'description' => 'nullable|string',
+            'is_active' => 'required|boolean',
         ]);
 
         try {
             Product::create([
                 'name' => $request->name,
-                'sku' => $request->sku,
                 'price' => $request->price,
-                'stock' => $request->stock ?? 0,
+                'category' => $request->category,
                 'description' => $request->description,
-                'is_active' => true,
+                'is_active' => $request->is_active,
             ]);
 
             return redirect()->route('products.index')->with('success', 'Product created successfully.');
@@ -99,9 +98,8 @@ class ProductController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'nullable|string|max:255|unique:products,sku,' . $product->id,
             'price' => 'required|numeric|min:0',
-            'stock' => 'nullable|integer|min:0',
+            'category' => 'nullable|string|min:0',
             'description' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
@@ -109,9 +107,8 @@ class ProductController extends Controller
         try {
             $product->update([
                 'name' => $request->name,
-                'sku' => $request->sku,
                 'price' => $request->price,
-                'stock' => $request->stock ?? 0,
+                'category' => $request->category,
                 'description' => $request->description,
                 'is_active' => $request->has('is_active'),
             ]);

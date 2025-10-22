@@ -23,18 +23,18 @@
                     <h2 class="text-lg font-semibold text-gray-800 mb-3">Product Information</h2>
                     <ul class="text-sm text-gray-700 space-y-2">
                         <li><strong>Name:</strong> {{ $product->name }}</li>
-                        <li><strong>SKU:</strong> {{ $product->sku ?? 'N/A' }}</li>
+                        <li><strong>Category:</strong> {{ $product->category ?? 'Uncategorized' }}</li>
                         <li><strong>Price:</strong> ${{ number_format($product->price, 2) }}</li>
-                        <li><strong>Stock:</strong> {{ $product->stock }}</li>
                         <li>
                             <strong>Status:</strong>
                             <span class="px-2 py-1 rounded-full text-xs font-semibold
-                            {{ $product->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                            {{ $product->is_active ? 'Active' : 'Inactive' }}
-                        </span>
+                                {{ $product->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                {{ $product->is_active ? 'Active' : 'Inactive' }}
+                            </span>
                         </li>
                     </ul>
                 </div>
+
                 <div>
                     <h2 class="text-lg font-semibold text-gray-800 mb-3">Description</h2>
                     <p class="text-gray-700 text-sm leading-relaxed">
@@ -109,13 +109,13 @@
                             {{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}
                         </td>
                         <td class="p-4 border-b">
-                            <span class="px-3 py-1 text-xs font-semibold rounded-full
-                                @if($invoice->status === 'paid') bg-green-100 text-green-700
-                                @elseif($invoice->status === 'pending') bg-yellow-100 text-yellow-700
-                                @elseif($invoice->status === 'overdue') bg-red-100 text-red-700
-                                @else bg-gray-100 text-gray-600 @endif">
-                                {{ ucfirst($invoice->status) }}
-                            </span>
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full
+                                    @if($invoice->status === 'paid') bg-green-100 text-green-700
+                                    @elseif($invoice->status === 'pending') bg-yellow-100 text-yellow-700
+                                    @elseif($invoice->status === 'overdue') bg-red-100 text-red-700
+                                    @else bg-gray-100 text-gray-600 @endif">
+                                    {{ ucfirst($invoice->status) }}
+                                </span>
                         </td>
                         <td class="p-4 border-b text-right">
                             <a href="{{ route('invoices.show', $invoice->id) }}" class="text-blue-600 hover:underline">

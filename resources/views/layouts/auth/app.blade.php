@@ -19,29 +19,43 @@
             }
         }
     </script>
+
+    <style>
+        /* ✅ Only one vertical scrollbar */
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        /* ✅ Disable nested overflow issues */
+        body, .flex, .flex-1 {
+            overflow: visible !important;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 font-sans">
-<div class="flex h-screen overflow-hidden">
+<div class="flex min-h-screen">
     {{-- Sidebar --}}
     @include('layouts.auth.sidebar')
 
     {{-- Main Content --}}
-    <div class="flex-1 flex flex-col overflow-hidden">
+    <div class="flex-1 flex flex-col">
         {{-- Navbar --}}
         @if(!isset($hideNavbar) || !$hideNavbar)
             @include('layouts.auth.navbar')
         @endif
 
         {{-- Page Content --}}
-        <main class="flex-1 overflow-y-auto p-8">
+        <main class="p-8">
             @yield('content')
         </main>
 
         {{-- Footer --}}
         @include('layouts.auth.footer')
     </div>
-
 </div>
 </body>
 </html>
