@@ -82,7 +82,7 @@
 
     <div class="content">
         <h1>Hello {{ $invoice->customer->name ?? 'Customer' }},</h1>
-        <p>We’ve generated your invoice <strong>#INV-{{ $invoice->invoice_number }}</strong>.</p>
+        <p>We’ve generated your invoice <strong>#{{ $invoice->invoice_number }}</strong>.</p>
 
         <div class="invoice-summary">
             <h3>Invoice Summary</h3>

@@ -6,7 +6,9 @@ use App\Mail\SendInvoiceMail;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\InvoiceMail;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -23,7 +25,7 @@ class InvoiceController extends Controller
     public function index()
     {
         // Fetch invoices with related customer data and paginate (10 per page)
-        $invoices = Invoice::with('customer:id,name,company_name')->paginate(10);
+        $invoices = Invoice::with('customer:id,name,company_name')->orderBy('id','desc')->paginate(10);
 
         // Return view with paginated data
         return view('invoices.index', compact('invoices'));
@@ -35,6 +37,7 @@ class InvoiceController extends Controller
      */
     public function create()
     {
+
         $customers = Customer::latest()->first();
         return view('invoices.create', compact('customers'));
     }
@@ -42,6 +45,8 @@ class InvoiceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -49,45 +54,51 @@ class InvoiceController extends Controller
             'email' => 'required|email',
             'address' => 'required|string',
             'city' => 'required|string',
-            'customer_id' => 'required|integer|exists:customers,id',
-            'invoice_number' => 'required|string|unique:invoices,invoice_number',
+            'customer_id' => 'nullable|integer|exists:customers,id',
+            'invoice_number' => 'nullable|string',
             'issue_date' => 'required|date',
-            'due_date' => 'required|date|after_or_equal:invoice.issue_date',
             'line_items.*.description' => 'required|string',
             'line_items.*.quantity' => 'required|numeric|min:1',
             'line_items.*.unit_price' => 'required|numeric|min:0',
         ]);
 
-        \DB::beginTransaction();
+        DB::beginTransaction();
+
         try {
-            // ✅ Create or update customer
-            $email = $request->input('email');
+            // ✅ Fetch or create customer
             $customer = Customer::updateOrCreate(
-                ['email' => $email],
-                ['name' => $request->input('name'),
+                ['email' => $request->input('email')],
+                [
+                    'name' => $request->input('name'),
                     'address' => $request->input('address'),
                     'city' => $request->input('city'),
-                    'country' => 'USA'
+                    'country' => 'USA',
                 ]
             );
 
+            // ✅ Generate or use provided invoice number
+            $invoiceNumber = $request->input('invoice_number') ?: Invoice::consumeNextInvoiceNumber();
+
+            // ✅ Calculate due date — 1 year after issue date
+            $issueDate = Carbon::parse($request->input('issue_date'));
+            $dueDate = $issueDate->copy()->addYear();
+
             // ✅ Create invoice
-            $invoiceData = $request->input('invoice_number');
             $invoice = Invoice::create([
                 'user_id' => auth()->id(),
                 'customer_id' => $customer->id,
-                'invoice_number' => $request->input('invoice_number'),
-                'description' => $request->input('description')  ?? '',
-                'amount' => 0, // will calculate after adding line items
+                'invoice_number' => $invoiceNumber,
+                'description' => $request->input('description') ?? '',
+                'amount' => 0, // calculated later
                 'status' => 'sent',
-                'issue_date' => $request->input('issue_date'),
-                'due_date' => $request->input('due_date'),
-                'note' => $invoiceData['note'] ?? '',
+                'issue_date' => $issueDate,
+                'due_date' => $dueDate,
+                'note' => $request->input('note') ?? '',
             ]);
 
-            // ✅ Create line items and calculate total
+            // ✅ Create line items & calculate total
             $totalAmount = 0;
-            foreach ($request->input('line_items') as $item) {
+            foreach ($request->input('line_items', []) as $item) {
                 $lineTotal = $item['quantity'] * $item['unit_price'];
                 $invoice->items()->create([
                     'activity' => $item['description'],
@@ -98,28 +109,34 @@ class InvoiceController extends Controller
                 $totalAmount += $lineTotal;
             }
 
+            // ✅ Update invoice total
             $invoice->update(['amount' => $totalAmount]);
 
-            // ✅ Generate PDF
-//            $pdf = PDF::loadView('invoices.pdf', compact('invoice'))->output();
-//            $pdfPath = storage_path("app/invoices/{$invoice->invoice_number}.pdf");
-//            file_put_contents($pdfPath, $pdf);
-
-            // ✅ Stripe Checkout
-
-            // ✅ Dispatch Mail Job
+            // ✅ Dispatch mail job
             SendInvoiceEmail::dispatch($invoice, '', '');
 
-            \DB::commit();
+            DB::commit();
 
-            return redirect()->route('invoices.index')
+            return redirect()
+                ->route('invoices.index')
                 ->with('success', 'Invoice created successfully!');
 
         } catch (\Throwable $e) {
-            \DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+            DB::rollBack();
+
+            // Log the error for debugging
+            \Log::error('Invoice creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Something went wrong while creating the invoice. Please try again.']);
         }
     }
+
 
     /**
      * Display the specified resource.

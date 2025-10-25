@@ -64,19 +64,28 @@ class SettingController extends Controller
             'enable_terms' => 'nullable|boolean',
             'enable_invoice_notes' => 'nullable|boolean',
             'enable_tax' => 'nullable|boolean',
+            'starting_invoice_number' => [
+                'required',
+                'string',
+                'regex:/^INV-\d{4}-\d{3,}$/', // e.g., INV-2025-001
+            ],
+        ], [
+            'starting_invoice_number.regex' => 'The starting invoice number must follow the format INV-YYYY-NNN (e.g., INV-2025-001).',
         ]);
 
         $setting = Setting::firstOrNew();
 
         $setting->fill([
-            'tax_id_invoice' => $validated['tax_id_invoice'] ?? null,
+            'tax_id' => $validated['tax_id_invoice'] ?? null,
             'enable_tax_id' => $request->has('enable_tax_id'),
             'enable_terms' => $request->has('enable_terms'),
             'enable_invoice_notes' => $request->has('enable_invoice_notes'),
             'enable_tax' => $request->has('enable_tax'),
+            'starting_invoice_number' => $validated['starting_invoice_number'],
         ])->save();
 
         return back()->with('success', 'Invoice settings updated successfully.');
     }
+
 
 }

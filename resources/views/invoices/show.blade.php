@@ -39,7 +39,7 @@
             <div class="flex justify-between mb-12">
                 <div>
                     <h1 class="text-4xl font-bold text-gray-800 mb-2">INVOICE</h1>
-                    <p class="text-lg text-gray-600">#INV-{{ $invoice->invoice_number }}</p>
+                    <p class="text-lg text-gray-600">#{{ $invoice->invoice_number }}</p>
                 </div>
                 <div class="text-right">
                     @if(!empty($globalSettings->logo_path))

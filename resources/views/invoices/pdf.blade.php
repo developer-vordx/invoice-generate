@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice #INV-{{ $invoice->invoice_number }}</title>
+    <title>Invoice #{{ $invoice->invoice_number }}</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; color: #333; margin: 0; padding: 0; }
         .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
@@ -38,7 +38,7 @@
             <tr>
                 <td>
                     <h1>INVOICE</h1>
-                    <p>#INV-{{ $invoice->invoice_number }}</p>
+                    <p>#{{ $invoice->invoice_number }}</p>
                 </td>
                 <td style="text-align:right;">
                     <strong>{{ $globalSettings->company_name ?? config('app.name') }}</strong><br>

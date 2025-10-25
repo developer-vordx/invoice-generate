@@ -95,7 +95,7 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="p-4 border-b font-semibold">
                             <a href="{{ route('invoices.show', $invoice->id) }}" class="text-blue-600 hover:underline">
-                                INV-{{ $invoice->invoice_number }}
+                                {{ $invoice->invoice_number }}
                             </a>
                         </td>
                         <td class="p-4 border-b">{{ $invoice->customer->name ?? 'N/A' }}</td>

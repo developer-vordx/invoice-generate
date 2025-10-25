@@ -26,6 +26,7 @@ class Setting extends Model
         'enable_invoice_notes',
         'enable_tax',
         'enable_tax_id',
+        'starting_invoice_number',
     ];
 
     protected static function booted()

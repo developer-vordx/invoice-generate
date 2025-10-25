@@ -196,6 +196,22 @@
                                    placeholder="123-456-789">
                         </div>
 
+                        <!-- Starting Invoice Number -->
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">Starting Invoice Number</label>
+                            <input type="text"
+                                   name="starting_invoice_number"
+                                   value="{{ old('starting_invoice_number', $setting->starting_invoice_number ?? 'INV-' . date('Y') . '-001') }}"
+                                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="INV-2025-001"
+                                   pattern="^INV-\d{4}-\d{3,}$"
+                                   title="Use the format INV-YYYY-NNN (e.g., INV-2025-001)">
+                            <p class="text-sm text-gray-500 mt-1">
+                                Set the starting invoice number. The next invoices will auto-increment from this number.
+                                <br>Format: <code>INV-YYYY-NNN</code> (e.g., <code>INV-{{ date('Y') }}-001</code>)
+                            </p>
+                        </div>
+
                         <!-- Switches -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <!-- Enable Terms & Conditions -->

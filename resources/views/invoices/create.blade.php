@@ -98,8 +98,9 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-3">Invoice Number *</label>
                                 <input type="text"
                                        name="invoice_number"
-                                       value="{{ old('invoice_number') }}"
+                                       value="{{ old('invoice_number', $globalSettings->starting_invoice_number ?? '') }}"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                                       readonly
                                        required>
                             </div>
 
