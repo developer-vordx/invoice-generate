@@ -70,7 +70,7 @@
                 <td style="padding: 10px; border: 1px solid #E5E7EB;">{{ $item->activity }}</td>
                 <td align="center" style="padding: 10px; border: 1px solid #E5E7EB;">{{ $item->quantity }}</td>
                 <td align="right" style="padding: 10px; border: 1px solid #E5E7EB;">${{ number_format($item->amount, 2) }}</td>
-                <td align="right" style="padding: 10px; border: 1px solid #E5E7EB;">${{ number_format($item->total, 2) }}</td>
+                <td align="right" style="padding: 10px; border: 1px solid #E5E7EB;">${{ number_format($item->amount, 2) }}</td>
             </tr>
         @endforeach
         </tbody>

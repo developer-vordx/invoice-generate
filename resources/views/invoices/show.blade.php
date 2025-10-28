@@ -43,7 +43,7 @@
                 </div>
                 <div class="text-right">
                     @if(!empty($globalSettings->logo_path))
-                        <img src="{{ asset($globalSettings->logo_path) }}" alt="Logo" class="h-12 mb-2 ml-auto">
+                        <img src="{{ asset('storage/' . $globalSettings->logo_path) }}" alt="Logo" class="h-12 mb-2 ml-auto">
                     @endif
                     <h2 class="text-xl font-bold text-gray-800">{{ $globalSettings->company_name ?? config('app.name') }}</h2>
                     <p class="text-gray-600">{{ $globalSettings->address ?? '' }}</p>

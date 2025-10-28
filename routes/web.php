@@ -118,6 +118,10 @@ Route::get('/invitation/accept/{token}', [InvitationController::class, 'accept']
 Route::post('/invitation/accept/{token}', [InvitationController::class, 'acceptSubmit'])
     ->name('invitation.accept.submit');
 
+
+Route::withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
+    ->post('/webhook', [App\Http\Controllers\StripeWebhookController::class, 'handleWebhook']);
+
 /*
 |--------------------------------------------------------------------------
 | Default / Landing Route

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -25,15 +26,22 @@ class SettingController extends Controller
             'invoice_terms'    => 'nullable|string',
             'contact_email'    => 'nullable|string',
             'tax_percentage'   => 'nullable|numeric|min:0|max:100',
-            'logo'             => 'nullable|image|mimes:jpg,jpeg,png,svg|max:2048',
+            'logo_path'             => 'nullable|image|mimes:jpg,webp,jpeg,png,svg|max:2048',
         ]);
 
         $setting = \App\Models\Setting::firstOrNew();
 
         // Handle logo upload
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('logos', 'public');
-            $validated['logo'] = $path;
+        // 🔹 Handle logo upload
+        if ($request->hasFile('logo_path')) {
+            // Delete old logo if exists
+            if ($setting->logo_path && Storage::disk('public')->exists($setting->logo_path)) {
+                Storage::disk('public')->delete($setting->logo_path);
+            }
+
+            // Store new logo
+            $path = $request->file('logo_path')->store('logos', 'public');
+            $validated['logo_path'] = $path;
         }
 
         $setting->fill($validated)->save();

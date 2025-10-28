@@ -62,8 +62,6 @@
                                        placeholder="info@company.com">
                             </div>
 
-
-
                             <div>
                                 <label class="block text-gray-600 font-medium mb-2">Country</label>
                                 <input type="text" name="country"
@@ -102,12 +100,25 @@
 
                             <div>
                                 <label class="block text-gray-600 font-medium mb-2">Company Logo</label>
-                                <input type="file" name="logo" accept="image/*"
+
+                                <input type="file" name="logo_path" accept="image/*" id="logo-input"
                                        class="w-full border border-gray-300 rounded-lg p-2.5">
-                                @if($setting->logo)
-                                    <img src="{{ asset('storage/' . $setting->logo) }}" alt="Logo" class="w-20 mt-2 rounded">
-                                @endif
+
+                                <div class="mt-3">
+
+                                    @if(!empty($setting->logo_path) && file_exists(public_path('storage/' . $setting->logo_path)))
+                                        <img id="logo-preview"
+                                             src="{{ asset('storage/' . $setting->logo_path) }}"
+                                             alt="Company Logo"
+                                             class="w-24 h-24 object-contain border rounded-lg shadow-sm">
+                                    @else
+                                        <img id="logo-preview" src="" alt="Preview"
+                                             class="hidden w-24 h-24 object-contain border rounded-lg shadow-sm">
+                                    @endif
+                                </div>
                             </div>
+
+
                         </div>
 
                         <div>
@@ -271,6 +282,28 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        document.getElementById('logo-input').addEventListener('change', function (event) {
+            console.log('Logo input changed'); // ✅ debug
+            const file = event.target.files[0];
+            const preview = document.getElementById('logo-preview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <script>
+        // 🔹 Live preview for uploaded logo
+
         function copyWebhook(url) {
             navigator.clipboard.writeText(url).then(() => {
                 Swal.fire({

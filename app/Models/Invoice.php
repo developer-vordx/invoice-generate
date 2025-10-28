@@ -21,8 +21,17 @@ class Invoice extends Model
         'due_date',
         'status',
         'note',
-        'user_responded'
+        'user_responded',
+        'payment_gateway',
+        'gateway_transaction_id',
+        'gateway_response',
+        'payment_status',
     ];
+
+    protected $casts = [
+        'gateway_response' => 'array',
+    ];
+
 
     public function customer()
     {

@@ -29,7 +29,13 @@ class InvoiceResponseController extends Controller
             }
 
             // Initialize Stripe
-            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+            // ✅ Use the dynamic key from global settings
+            $stripeSecret = config('settings.stripe_secret_key');
+
+            if (!$stripeSecret) {
+                abort(500, 'Stripe secret key not configured.');
+            }
+            \Stripe\Stripe::setApiKey($stripeSecret);
 
             // Create Stripe Checkout session
             $session = \Stripe\Checkout\Session::create([
@@ -40,12 +46,12 @@ class InvoiceResponseController extends Controller
                         'product_data' => [
                             'name' => "Invoice #{$invoice->invoice_number}",
                         ],
-                        'unit_amount' => $totalAmount * 100, // Stripe expects cents
+                        'unit_amount' => $totalAmount * 100,
                     ],
                     'quantity' => 1,
                 ]],
                 'mode' => 'payment',
-                'customer_email' => $invoice->customer->email, // prefill email
+                'customer_email' => $invoice->customer->email,
                 'success_url' => route('invoices.show', $invoice->id) . '?paid=true',
                 'cancel_url' => route('invoices.show', $invoice->id),
             ]);

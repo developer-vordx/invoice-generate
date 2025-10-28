@@ -95,7 +95,7 @@ class InvoiceController extends Controller
                 'due_date' => $dueDate,
                 'note' => $request->input('note') ?? '',
             ]);
-
+            $invoice->consumeNextInvoiceNumber();
             // ✅ Create line items & calculate total
             $totalAmount = 0;
             foreach ($request->input('line_items', []) as $item) {
