@@ -16,7 +16,7 @@ class StripeWebhookController extends Controller
         $sigHeader = $request->header('Stripe-Signature');
 
         // ✅ Load the dynamic webhook secret from settings (via SettingServiceProvider)
-        $endpointSecret = config('settings.stripe_webhook_secret');
+        $endpointSecret = config('settings.webhook_secret');
 
         if (!$endpointSecret) {
             Log::error('Stripe webhook secret not configured.');

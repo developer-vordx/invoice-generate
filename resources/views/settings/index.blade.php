@@ -245,6 +245,17 @@
                                 </label>
                             </div>
 
+
+                            <!-- Enable Due Date -->
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700 font-medium">Enable Due Date</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="enable_due_date" value="1" class="sr-only peer" {{ old('enable_due_date', $setting->enable_due_date) ? 'checked' : '' }}>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                    <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                </label>
+                            </div>
+
                             <!-- Enable Tax -->
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-700 font-medium">Enable Tax</span>

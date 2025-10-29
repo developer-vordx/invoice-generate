@@ -49,6 +49,7 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email',
@@ -58,6 +59,7 @@ class InvoiceController extends Controller
             'invoice_number' => 'nullable|string',
             'issue_date' => 'required|date',
             'line_items.*.description' => 'required|string',
+            'line_items.*.product_id' => 'required|integer|exists:products,id',
             'line_items.*.quantity' => 'required|numeric|min:1',
             'line_items.*.unit_price' => 'required|numeric|min:0',
         ]);
@@ -71,6 +73,7 @@ class InvoiceController extends Controller
                 [
                     'name' => $request->input('name'),
                     'address' => $request->input('address'),
+                    'company_name' => $request->input('company_name'),
                     'city' => $request->input('city'),
                     'country' => 'USA',
                 ]
@@ -89,11 +92,12 @@ class InvoiceController extends Controller
                 'customer_id' => $customer->id,
                 'invoice_number' => $invoiceNumber,
                 'description' => $request->input('description') ?? '',
-                'amount' => 0, // calculated later
+                'amount' => 0,
                 'status' => 'sent',
                 'issue_date' => $issueDate,
                 'due_date' => $dueDate,
-                'note' => $request->input('note') ?? '',
+                'note' => $request->input('notes') ?? '',
+                'project_address' => $request->input('project_address') ?? '',
             ]);
             $invoice->consumeNextInvoiceNumber();
             // ✅ Create line items & calculate total
@@ -102,6 +106,7 @@ class InvoiceController extends Controller
                 $lineTotal = $item['quantity'] * $item['unit_price'];
                 $invoice->items()->create([
                     'activity' => $item['description'],
+                    'product_id' => $item['product_id'],
                     'quantity' => $item['quantity'],
                     'amount' => $item['unit_price'],
                     'total' => $lineTotal,

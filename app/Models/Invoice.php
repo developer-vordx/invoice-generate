@@ -26,6 +26,7 @@ class Invoice extends Model
         'gateway_transaction_id',
         'gateway_response',
         'payment_status',
+        'project_address',
     ];
 
     protected $casts = [

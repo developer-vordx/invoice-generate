@@ -40,6 +40,12 @@
                 <div>
                     <h1 class="text-4xl font-bold text-gray-800 mb-2">INVOICE</h1>
                     <p class="text-lg text-gray-600">#{{ $invoice->invoice_number }}</p>
+                    {{-- ✅ PROJECT ADDRESS --}}
+                    @if(!empty($invoice->project_address))
+                        <p class="text-sm font-bold text-gray-500 mb-1">PROJECT ADDRESS:</p>
+                        <p class="text-gray-800 whitespace-pre-line">{{ $invoice->project_address }}</p>
+
+                    @endif
                 </div>
                 <div class="text-right">
                     @if(!empty($globalSettings->logo_path))
@@ -75,9 +81,10 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <span class="text-gray-500">Issue Date:</span>
                         <span class="font-semibold">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('M d, Y') }}</span>
-
+                        @if(!empty($globalSettings->enable_due_date) && $globalSettings->enable_due_date)
                         <span class="text-gray-500">Due Date:</span>
                         <span class="font-semibold">{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</span>
+                        @endif
 
                         <span class="text-gray-500">Status:</span>
                         <span>
@@ -104,18 +111,16 @@
             <table class="w-full mb-8">
                 <thead class="border-b-2 border-gray-300">
                 <tr class="text-left">
+                    <th class="pb-4 text-sm font-semibold text-gray-600">activity</th>
                     <th class="pb-4 text-sm font-semibold text-gray-600">DESCRIPTION</th>
-                    <th class="pb-4 text-sm font-semibold text-gray-600 text-center">QTY</th>
-                    <th class="pb-4 text-sm font-semibold text-gray-600 text-right">UNIT PRICE</th>
                     <th class="pb-4 text-sm font-semibold text-gray-600 text-right">AMOUNT</th>
                 </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                 @foreach($invoice->items as $item)
                     <tr>
-                        <td>{{ $item->activity }}</td>
-                        <td class="text-center">{{ $item->quantity }}</td>
-                        <td class="text-right">{{ $currency }}{{ number_format($item->amount, 2) }}</td>
+                        <td>{{ $item->product->name }}</td>
+                        <td>{{ $item->product->description }}</td>
                         <td class="text-right">{{ $currency }}{{ number_format($item->quantity * $item->amount, 2) }}</td>
                     </tr>
                 @endforeach
@@ -160,6 +165,13 @@
             <!-- Notes & Terms -->
             <div class="mt-8 border-t border-gray-200 pt-8 text-sm">
 
+                {{-- ✅ Project Notes --}}
+                @if(!empty($invoice->note))
+                    <div class="mb-6">
+                        <h3 class="font-bold text-gray-800 mb-2">Project Notes</h3>
+                        <p class="text-gray-600 whitespace-pre-line">{{ $invoice->note }}</p>
+                    </div>
+                @endif
                 {{-- Notes Section --}}
                 @if($globalSettings->enable_invoice_notes && !empty($globalSettings->invoice_notes))
                     <div class="mb-6">

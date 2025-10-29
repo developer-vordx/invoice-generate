@@ -4,76 +4,198 @@
     <meta charset="UTF-8">
     <title>Invoice #{{ $invoice->invoice_number }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; color: #333; margin: 0; padding: 0; }
-        .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { width: 100%; margin-bottom: 30px; border-bottom: 2px solid #444; padding-bottom: 10px; }
-        .header table { width: 100%; }
-        .header h1 { margin: 0; font-size: 28px; }
+        /* === PAGE SETUP === */
+        @page {
+            size: A4;
+            margin: 20mm 20mm 20mm 20mm;
+        }
 
-        .section-divider { border-top: 1px solid #ccc; margin: 25px 0; }
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 13px;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
 
-        .billing, .items, .totals, .notes { margin-bottom: 25px; }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px 25px 20px 25px;
+        }
+
+        /* === HEADER === */
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #d1d5db;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        .header-left { width: 60%; vertical-align: top; }
+        .header-right { width: 40%; text-align: right; vertical-align: top; }
+        .logo { max-height: 45px; margin-bottom: 8px; }
+        .header-table h1 { font-size: 26px; margin: 0 0 4px 0; color: #111827; font-weight: 700; }
+        .header-table p { margin: 2px 0; color: #4b5563; }
+
+        /* === BILLING === */
+        .billing { margin-bottom: 20px; page-break-inside: avoid; }
         .billing table { width: 100%; border-collapse: collapse; }
-        .billing td { vertical-align: top; padding: 5px; }
+        .billing td { vertical-align: top; padding: 3px 0; }
 
-        .items table { width: 100%; border-collapse: collapse; }
-        .items th, .items td { border: 1px solid #ddd; padding: 8px; }
-        .items th { background-color: #f5f5f5; text-align: left; }
+        /* === ITEMS TABLE === */
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 30px;
+        }
 
-        .totals table { width: 300px; float: right; border-collapse: collapse; }
-        .totals td { padding: 5px; }
-        .totals tr.total td { font-weight: bold; font-size: 16px; border-top: 2px solid #000; }
+        table.items th, table.items td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px 6px;
+            font-size: 13px;
+        }
 
-        .notes h3 { margin-bottom: 5px; }
-        .notes p, .notes ul { margin: 0; padding-left: 20px; }
-        .status { display: inline-block; padding: 3px 8px; font-size: 10px; color: #fff; background-color: #4a90e2; border-radius: 4px; }
+        table.items th {
+            background-color: #f9fafb;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        table.items td:last-child { text-align: right; }
+
+        /* === MULTIPAGE TABLE SUPPORT === */
+        thead { display: table-header-group; }
+        tfoot { display: table-row-group; }
+        tr { page-break-inside: avoid; }
+
+        /* === TOTALS === */
+        .totals {
+            width: 100%;
+            margin-top: 15px;
+            clear: both;
+            page-break-inside: avoid;
+        }
+        .totals-inner {
+            float: right;
+            width: 250px;
+        }
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #e5e7eb;
+            padding: 5px 0;
+        }
+        .totals-row.total {
+            border-top: 2px solid #111827;
+            font-weight: 700;
+            font-size: 15px;
+            margin-top: 5px;
+        }
+
+        /* === STATUS === */
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 11px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .status.sent { background-color: #dbeafe; color: #1e3a8a; }
+        .status.paid { background-color: #dcfce7; color: #166534; }
+        .status.void { background-color: #fee2e2; color: #991b1b; }
+        .status.default { background-color: #e5e7eb; color: #374151; }
+
+        /* === NOTES === */
+        .notes {
+            clear: both;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 40px;
+            padding-top: 15px;
+            page-break-inside: avoid;
+        }
+        .notes h3 {
+            font-size: 14px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 6px;
+        }
+        .notes p {
+            font-size: 13px;
+            color: #4b5563;
+            margin-bottom: 10px;
+            white-space: pre-line;
+        }
+
     </style>
 </head>
 <body>
 <div class="container">
 
-    <!-- Header -->
-    <div class="header">
-        <table>
-            <tr>
-                <td>
-                    <h1>INVOICE</h1>
-                    <p>#{{ $invoice->invoice_number }}</p>
-                </td>
-                <td style="text-align:right;">
-                    <strong>{{ $globalSettings->company_name ?? config('app.name') }}</strong><br>
-                    {{ $globalSettings->address ?? '' }}<br>
-                    @if(!empty($globalSettings->contact_email))
-                        {{ $globalSettings->contact_email }}
-                    @endif
-                </td>
-            </tr>
-        </table>
-    </div>
+    {{-- HEADER --}}
+    <table class="header-table">
+        <tr>
+            <td class="header-left">
+                <h1>INVOICE</h1>
+                <p>#{{ $invoice->invoice_number }}</p>
+                @if(!empty($invoice->project_address))
+                    <p style="margin-top:10px;font-weight:600;">PROJECT ADDRESS:</p>
+                    <p>{{ $invoice->project_address }}</p>
+                @endif
+            </td>
+            <td class="header-right">
+                @if(!empty($globalSettings->logo_path))
+                    <img src="{{ asset('storage/' . $globalSettings->logo_path) }}" class="logo" alt="Logo">
+                @endif
+                <p><strong>{{ $globalSettings->company_name ?? config('app.name') }}</strong></p>
+                <p>{{ $globalSettings->address ?? '' }}</p>
+                @if($globalSettings->enable_tax_id && !empty($globalSettings->tax_id))
+                    <p>Tax ID: {{ $globalSettings->tax_id }}</p>
+                @endif
+                @if($globalSettings->contact_email)
+                    <p>Email: {{ $globalSettings->contact_email }}</p>
+                @endif
+            </td>
+        </tr>
+    </table>
 
-    <!-- Billing Info -->
+    {{-- BILLING --}}
     <div class="billing">
         <table>
             <tr>
                 <td>
-                    <strong>BILL TO:</strong><br>
-                    {{ $invoice->customer->name ?? 'N/A' }}<br>
-                    {{ $invoice->customer->email ?? 'N/A' }}<br>
-                    {{ $invoice->customer->address ?? 'N/A' }}
+                    <p><strong>BILL TO:</strong></p>
+                    <p>{{ $invoice->customer->name ?? 'N/A' }}</p>
+                    <p>{{ $invoice->customer->email ?? 'N/A' }}</p>
+                    <p>{{ $invoice->customer->address ?? 'N/A' }}</p>
                 </td>
                 <td style="text-align:right;">
                     <table>
                         <tr>
-                            <td>Issue Date:</td>
+                            <td><strong>Issue Date:</strong></td>
                             <td>{{ \Carbon\Carbon::parse($invoice->issue_date)->format('M d, Y') }}</td>
                         </tr>
+                        @if(!empty($globalSettings->enable_due_date) && $globalSettings->enable_due_date)
+                            <tr>
+                                <td><strong>Due Date:</strong></td>
+                                <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</td>
+                            </tr>
+                        @endif
                         <tr>
-                            <td>Due Date:</td>
-                            <td>{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Status:</td>
-                            <td><span class="status">{{ strtoupper($invoice->status) }}</span></td>
+                            <td><strong>Status:</strong></td>
+                            <td>
+                                @php
+                                    $statusClass = match($invoice->status) {
+                                        'sent' => 'sent',
+                                        'paid' => 'paid',
+                                        'void' => 'void',
+                                        default => 'default'
+                                    };
+                                @endphp
+                                <span class="status {{ $statusClass }}">{{ strtoupper($invoice->status) }}</span>
+                            </td>
                         </tr>
                     </table>
                 </td>
@@ -81,80 +203,68 @@
         </table>
     </div>
 
-    <div class="section-divider"></div>
-
-    <!-- Items -->
-    <div class="items">
-        <table>
-            <thead>
+    {{-- ITEMS --}}
+    @php $currency = $globalSettings->base_currency ?? '$'; @endphp
+    <table class="items">
+        <thead>
+        <tr>
+            <th>ACTIVITY</th>
+            <th>DESCRIPTION</th>
+            <th style="text-align:right;">AMOUNT</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($invoice->items as $item)
             <tr>
-                <th>DESCRIPTION</th>
-                <th>QTY</th>
-                <th>UNIT PRICE</th>
-                <th>AMOUNT</th>
+                <td>{{ $item->product->name }}</td>
+                <td>{{ $item->product->description }}</td>
+                <td>{{ $currency }}{{ number_format($item->quantity * $item->amount, 2) }}</td>
             </tr>
-            </thead>
-            <tbody>
-            @foreach($invoice->items as $item)
-                <tr>
-                    <td>{{ $item->activity }}</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($item->amount, 2) }}</td>
-                    <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($item->quantity * $item->amount, 2) }}</td>
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
-    </div>
+        @endforeach
+        </tbody>
+    </table>
 
-    <div class="section-divider"></div>
-
-    <!-- Totals -->
+    {{-- TOTALS --}}
     @php
         $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-                // Apply tax only if "Enable Tax" is turned ON in settings
-        if (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax) {
-            $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
-            $taxAmount = $subtotal * $taxRate;
-        } else {
-            $taxRate = 0;
-            $taxAmount = 0;
-        }
-
+        $taxRate = (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax)
+                    ? ($globalSettings->tax_percentage ?? 0) / 100
+                    : 0;
+        $taxAmount = $subtotal * $taxRate;
         $total = $subtotal + $taxAmount;
     @endphp
-
     <div class="totals">
-        <table>
-            <tr>
-                <td>Subtotal:</td>
-                <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($subtotal, 2) }}</td>
-            </tr>
-            <tr>
-                @if($globalSettings->enable_tax)
-                    <td>Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</td>
-                    <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($taxAmount, 2) }}</td>
-                @endif
-            </tr>
-            <tr class="total">
-                <td>Total:</td>
-                <td>{{ $globalSettings->base_currency ?? '$' }}{{ number_format($total, 2) }}</td>
-            </tr>
-        </table>
+        <div class="totals-inner">
+            <div class="totals-row">
+                <span><strong>Subtotal:</strong></span>
+                <span>{{ $currency }}{{ number_format($subtotal, 2) }}</span>
+            </div>
+            @if(!empty($globalSettings->enable_tax) && $globalSettings->enable_tax)
+                <div class="totals-row">
+                    <span><strong>Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</strong></span>
+                    <span>{{ $currency }}{{ number_format($taxAmount, 2) }}</span>
+                </div>
+            @endif
+            <div class="totals-row total">
+                <span>Total:</span>
+                <span>{{ $currency }}{{ number_format($total, 2) }}</span>
+            </div>
+        </div>
     </div>
 
-    <div class="section-divider" style="clear:both;"></div>
-
-    <!-- Notes & Terms -->
+    {{-- NOTES --}}
     <div class="notes">
+        @if(!empty($invoice->note))
+            <h3>Project Notes</h3>
+            <p>{{ $invoice->note }}</p>
+        @endif
         @if($globalSettings->enable_invoice_notes && !empty($globalSettings->invoice_notes))
             <h3>Notes</h3>
-            <p style="white-space: pre-line;">{{ $globalSettings->invoice_notes }}</p>
+            <p>{{ $globalSettings->invoice_notes }}</p>
         @endif
-
         @if($globalSettings->enable_terms && !empty($globalSettings->invoice_terms))
             <h3>Terms & Conditions</h3>
-            <p style="white-space: pre-line;">{{ $globalSettings->invoice_terms }}</p>
+            <p>{{ $globalSettings->invoice_terms }}</p>
         @endif
     </div>
 

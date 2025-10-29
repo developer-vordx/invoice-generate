@@ -72,6 +72,7 @@ class SettingController extends Controller
             'enable_terms' => 'nullable|boolean',
             'enable_invoice_notes' => 'nullable|boolean',
             'enable_tax' => 'nullable|boolean',
+            'enable_due_date' => 'nullable|boolean',
             'starting_invoice_number' => [
                 'required',
                 'string',
@@ -89,6 +90,7 @@ class SettingController extends Controller
             'enable_terms' => $request->has('enable_terms'),
             'enable_invoice_notes' => $request->has('enable_invoice_notes'),
             'enable_tax' => $request->has('enable_tax'),
+            'enable_due_date' => $request->has('enable_due_date'),
             'starting_invoice_number' => $validated['starting_invoice_number'],
         ])->save();
 

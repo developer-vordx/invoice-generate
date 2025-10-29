@@ -18,6 +18,7 @@
         {{-- Main --}}
         <main class="p-8">
             <div class="max-w-5xl mx-auto space-y-8">
+
                 {{-- Validation Errors --}}
                 @if ($errors->any())
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -58,10 +59,7 @@
                                    required>
                         </div>
 
-
                         <div class="grid grid-cols-2 gap-6">
-
-
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
                                 <input type="text" id="customer_company_name" name="company_name"
@@ -88,12 +86,29 @@
                         </div>
                     </div>
 
+                    {{-- PROJECT ADDRESS --}}
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-6">Project Address</h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Project Address</label>
+                            <input type="text"
+                                   id="project_address"
+                                   name="project_address"
+                                   placeholder="Start typing the address..."
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                                   autocomplete="off">
+                            <p class="text-xs text-gray-500 mt-2">
+                                Start typing to search for an address in the U.S. — or type it manually if it’s not listed.
+                            </p>
+                        </div>
+                    </div>
+
                     {{-- INVOICE DETAILS --}}
                     <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                         <h3 class="text-lg font-semibold text-gray-800 mb-6">Invoice Details</h3>
 
-                        {{-- Changed from 3 columns → 2 columns --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Invoice Number --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-3">Invoice Number *</label>
                                 <input type="text"
@@ -104,6 +119,7 @@
                                        required>
                             </div>
 
+                            {{-- Issue Date --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-3">Issue Date *</label>
                                 <input type="date"
@@ -113,8 +129,22 @@
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
                                        required>
                             </div>
+
+                            {{-- Conditionally show Due Date --}}
+                            @if(!empty($globalSettings->enable_due_date) && $globalSettings->enable_due_date)
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">Due Date *</label>
+                                    <input type="date"
+                                           name="due_date"
+                                           value="{{ old('due_date', now()->addDays(7)->format('Y-m-d')) }}"
+                                           min="{{ now()->format('Y-m-d') }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                                           required>
+                                </div>
+                            @endif
                         </div>
                     </div>
+
 
                     {{-- LINE ITEMS --}}
                     <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
@@ -136,6 +166,16 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {{-- NOTES --}}
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Notes</h3>
+                        <textarea name="notes"
+                                  id="notes"
+                                  rows="4"
+                                  placeholder="Add any additional notes or instructions for this invoice..."
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"></textarea>
                     </div>
 
                     {{-- ACTION BUTTONS --}}
@@ -175,15 +215,10 @@
         .select2-container {
             width: 100% !important;
         }
-        .select2-container {
-            width: 100% !important;
-        }
-
         .select2-results__options {
             max-height: 350px !important;
             width: 100% !important;
         }
-
     </style>
 
     <script>
@@ -241,26 +276,26 @@
             function addLineItem() {
                 const index = container.children.length;
                 const row = document.createElement('div');
-                row.className =
-                    'grid grid-cols-12 gap-4 items-center bg-gray-50 p-4 rounded-lg border border-gray-200';
+                row.className = 'grid grid-cols-12 gap-4 items-center bg-gray-50 p-4 rounded-lg border border-gray-200';
                 row.innerHTML = `
-            <div class="col-span-8">
-                <select class="product-select w-full border border-gray-300 rounded-lg"></select>
-            </div>
-            <div class="col-span-3">
-                <input type="text" class="line-total w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-right font-semibold text-gray-800" value="$0.00" readonly data-value="0">
-            </div>
-            <div class="col-span-1 text-center">
-                <button type="button" class="remove-line text-red-500 hover:text-red-700">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
+                    <div class="col-span-8">
+                        <select class="product-select w-full border border-gray-300 rounded-lg"></select>
+                    </div>
+                    <div class="col-span-3">
+                        <input type="text" class="line-total w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-right font-semibold text-gray-800" value="$0.00" readonly data-value="0">
+                    </div>
+                    <div class="col-span-1 text-center">
+                        <button type="button" class="remove-line text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
 
-            <!-- Hidden fields -->
-            <input type="hidden" name="line_items[${index}][quantity]" value="1" class="line-quantity">
-            <input type="hidden" name="line_items[${index}][unit_price]" value="0" class="line-price">
-            <input type="hidden" name="line_items[${index}][description]" class="line-description">
-        `;
+                    {{-- Hidden Inputs --}}
+                <input type="hidden" name="line_items[${index}][product_id]" class="line-product-id">
+                    <input type="hidden" name="line_items[${index}][quantity]" value="1" class="line-quantity">
+                    <input type="hidden" name="line_items[${index}][unit_price]" value="0" class="line-price">
+                    <input type="hidden" name="line_items[${index}][description]" class="line-description">
+                `;
                 container.appendChild(row);
 
                 const qty = row.querySelector('.line-quantity');
@@ -268,8 +303,8 @@
                 const total = row.querySelector('.line-total');
                 const productSelect = row.querySelector('.product-select');
                 const desc = row.querySelector('.line-description');
+                const productId = row.querySelector('.line-product-id');
 
-                // ✅ Initialize wider product dropdown
                 $(productSelect).select2({
                     placeholder: 'Search product...',
                     width: '100%',
@@ -296,26 +331,25 @@
                     }
                 });
 
-                // ✅ Handle selection
                 $(productSelect).on('select2:select', function (e) {
                     const data = e.params.data;
                     if (data.id === 'other') {
                         desc.value = '';
                         price.value = '0';
+                        productId.value = '';
                         desc.removeAttribute('readonly');
                     } else {
                         desc.value = data.name;
-                        desc.setAttribute('readonly', true);
                         price.value = data.price;
+                        productId.value = data.id;
+                        desc.setAttribute('readonly', true);
                     }
-
                     const lineTotal = parseFloat(qty.value) * parseFloat(price.value);
                     total.value = `$${lineTotal.toFixed(2)}`;
                     total.dataset.value = lineTotal;
                     updateTotal();
                 });
 
-                // ✅ Remove line item
                 row.querySelector('.remove-line').addEventListener('click', () => {
                     row.remove();
                     updateTotal();
@@ -326,6 +360,25 @@
 
             addBtn.addEventListener('click', addLineItem);
         });
+
+        // ✅ Google Places Autocomplete
+        function initAutocomplete() {
+            const input = document.getElementById("project_address");
+            if (!input) return;
+            const autocomplete = new google.maps.places.Autocomplete(input, {
+                types: ['address'],
+                componentRestrictions: { country: 'us' },
+                fields: ['formatted_address']
+            });
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (place && place.formatted_address) {
+                    input.value = place.formatted_address;
+                }
+            });
+        }
     </script>
 
+    {{-- Google Places --}}
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.places_api_key') }}&libraries=places&callback=initAutocomplete" async defer></script>
 @endsection
