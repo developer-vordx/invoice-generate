@@ -49,6 +49,22 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function activities()
+    {
+        return $this->hasMany(InvoiceActivity::class);
+    }
+
+    public function logActivity($type, $message = null)
+    {
+        return $this->activities()->create([
+            'customer_id' => $this->customer_id,
+            'activity_type' => $type,
+            'message' => $message,
+        ]);
+    }
+
+
+
     /**
      * Consume the next invoice number.
      * Reads directly from the settings table (not cache),

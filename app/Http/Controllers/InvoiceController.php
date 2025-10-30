@@ -117,6 +117,10 @@ class InvoiceController extends Controller
             // ✅ Update invoice total
             $invoice->update(['amount' => $totalAmount]);
 
+            $invoice->logActivity(
+                'created',
+                "Invoice #{$invoice->invoice_number} created by " . (auth()->user()->name ?? 'System') . " for customer {$customer->name}."
+            );
             // ✅ Dispatch mail job
             SendInvoiceEmail::dispatch($invoice, '', '');
 
@@ -148,7 +152,7 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
-        $invoice->load(['customer', 'items']);
+        $invoice->load(['customer', 'items', 'activities']);
 
         $invoice->subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->unit_price);
         $invoice->taxRate = 0.1;
@@ -249,7 +253,10 @@ class InvoiceController extends Controller
         try {
             // Generate PDF from the invoice Blade view
             $pdf = Pdf::loadView('invoices.pdf', compact('invoice'));
-
+            $invoice->logActivity(
+                'downloaded',
+                'Invoice PDF downloaded by ' . (auth()->user()->name ?? 'Guest') . '.'
+            );
             // If AJAX request, return base64-encoded PDF
             if ($request->ajax()) {
                 $pdfContent = $pdf->output();
@@ -283,7 +290,10 @@ class InvoiceController extends Controller
 
         try {
             Mail::to($invoice->customer->email)->send(new SendInvoiceMail($invoice));
-
+            $invoice->logActivity(
+                'email_sent',
+                'Invoice email sent to ' . $invoice->customer->email . ' by ' . (auth()->user()->name ?? 'System') . '.'
+            );
             return response()->json([
                 'success' => true,
                 'message' => 'Invoice email sent successfully!'
@@ -309,7 +319,10 @@ class InvoiceController extends Controller
             $stripe = new StripeClient(config('services.stripe.secret'));
             $stripe->invoices->voidInvoice($invoice->stripe_invoice_id);
         }
-
+        $invoice->logActivity(
+            'voided',
+            'Invoice #' . $invoice->invoice_number . ' was marked as void by ' . (auth()->user()->name ?? 'System') . '.'
+        );
         return response()->json(['message' => 'Invoice voided successfully.']);
     }
 

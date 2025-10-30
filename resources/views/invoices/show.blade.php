@@ -44,7 +44,6 @@
                     @if(!empty($invoice->project_address))
                         <p class="text-sm font-bold text-gray-500 mb-1">PROJECT ADDRESS:</p>
                         <p class="text-gray-800 whitespace-pre-line">{{ $invoice->project_address }}</p>
-
                     @endif
                 </div>
                 <div class="text-right">
@@ -55,7 +54,7 @@
                     <p class="text-gray-600">{{ $globalSettings->address ?? '' }}</p>
 
                     @if($globalSettings->enable_tax_id && !empty($globalSettings->tax_id))
-                            <p class="text-gray-600">Tax ID: {{ $globalSettings->tax_id }}</p>
+                        <p class="text-gray-600">Tax ID: {{ $globalSettings->tax_id }}</p>
                     @endif
 
                     @if($globalSettings->contact_email)
@@ -82,8 +81,8 @@
                         <span class="text-gray-500">Issue Date:</span>
                         <span class="font-semibold">{{ \Carbon\Carbon::parse($invoice->issue_date)->format('M d, Y') }}</span>
                         @if(!empty($globalSettings->enable_due_date) && $globalSettings->enable_due_date)
-                        <span class="text-gray-500">Due Date:</span>
-                        <span class="font-semibold">{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</span>
+                            <span class="text-gray-500">Due Date:</span>
+                            <span class="font-semibold">{{ \Carbon\Carbon::parse($invoice->due_date)->format('M d, Y') }}</span>
                         @endif
 
                         <span class="text-gray-500">Status:</span>
@@ -111,7 +110,7 @@
             <table class="w-full mb-8">
                 <thead class="border-b-2 border-gray-300">
                 <tr class="text-left">
-                    <th class="pb-4 text-sm font-semibold text-gray-600">activity</th>
+                    <th class="pb-4 text-sm font-semibold text-gray-600">ACTIVITY</th>
                     <th class="pb-4 text-sm font-semibold text-gray-600">DESCRIPTION</th>
                     <th class="pb-4 text-sm font-semibold text-gray-600 text-right">AMOUNT</th>
                 </tr>
@@ -130,7 +129,6 @@
             <!-- Totals -->
             @php
                 $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-                // Apply tax only if "Enable Tax" is turned ON in settings
                 if (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax) {
                     $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
                     $taxAmount = $subtotal * $taxRate;
@@ -140,7 +138,6 @@
                 }
                 $total = $subtotal + $taxAmount;
             @endphp
-
 
             <div class="flex justify-end mb-12">
                 <div class="w-64">
@@ -164,36 +161,45 @@
 
             <!-- Notes & Terms -->
             <div class="mt-8 border-t border-gray-200 pt-8 text-sm">
-
-                {{-- ✅ Project Notes --}}
                 @if(!empty($invoice->note))
                     <div class="mb-6">
                         <h3 class="font-bold text-gray-800 mb-2">Project Notes</h3>
                         <p class="text-gray-600 whitespace-pre-line">{{ $invoice->note }}</p>
                     </div>
                 @endif
-                {{-- Notes Section --}}
+
                 @if($globalSettings->enable_invoice_notes && !empty($globalSettings->invoice_notes))
                     <div class="mb-6">
                         <h3 class="font-bold text-gray-800 mb-2">Notes</h3>
-                        <p class="text-gray-600 whitespace-pre-line">
-                            {{ $globalSettings->invoice_notes }}
-                        </p>
+                        <p class="text-gray-600 whitespace-pre-line">{{ $globalSettings->invoice_notes }}</p>
                     </div>
                 @endif
 
-                {{-- Terms & Conditions Section --}}
                 @if($globalSettings->enable_terms && !empty($globalSettings->invoice_terms))
                     <div>
                         <h3 class="font-bold text-gray-800 mb-2">Terms & Conditions</h3>
-                        <p class="text-gray-600 whitespace-pre-line">
-                            {{ $globalSettings->invoice_terms }}
-                        </p>
+                        <p class="text-gray-600 whitespace-pre-line">{{ $globalSettings->invoice_terms }}</p>
                     </div>
                 @endif
-
             </div>
 
+            {{-- ✅ APPENDED INVOICE ACTIVITY LOG --}}
+            @if($invoice->activities->count())
+                <div class="mt-12 border-t border-gray-200 pt-8 text-sm">
+                    <h3 class="font-bold text-gray-800 mb-3">Invoice Activity Log</h3>
+                    <ul class="list-disc ml-6 text-gray-700">
+                        @foreach($invoice->activities->sortByDesc('created_at') as $activity)
+                            <li class="mb-1">
+                                <span class="font-medium">{{ ucfirst($activity->activity_type) }}</span> —
+                                {{ $activity->message ?? 'No message available.' }}
+                                <span class="text-xs text-gray-500">
+                                    ({{ $activity->created_at->format('M d, Y h:i A') }})
+                                </span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
     </main>
 
@@ -306,5 +312,4 @@
             });
         });
     </script>
-
 @endsection
