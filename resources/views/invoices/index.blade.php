@@ -71,9 +71,10 @@
     </div>
 
     <!-- Pagination -->
-    <div class="mt-4">
-        {{ $invoices->links('vendor.pagination.tailwind') }}
+    <div class="mt-8 flex justify-center">
+        {{ $invoices->links('components.pagination') }}
     </div>
+
 
     {{-- Scripts --}}
     <script>

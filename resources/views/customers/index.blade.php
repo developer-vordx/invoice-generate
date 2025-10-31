@@ -60,8 +60,9 @@
     </div>
 
     <!-- Pagination -->
-    <div class="mt-4">
-        {{ $customers->links('pagination::tailwind') }}
+
+    <div class="mt-8 flex justify-center">
+        {{ $customers->links('components.pagination') }}
     </div>
 
     <!-- Import CSV Modal -->

@@ -183,23 +183,9 @@
                 @endif
             </div>
 
-            {{-- ✅ APPENDED INVOICE ACTIVITY LOG --}}
-            @if($invoice->activities->count())
-                <div class="mt-12 border-t border-gray-200 pt-8 text-sm">
-                    <h3 class="font-bold text-gray-800 mb-3">Invoice Activity Log</h3>
-                    <ul class="list-disc ml-6 text-gray-700">
-                        @foreach($invoice->activities->sortByDesc('created_at') as $activity)
-                            <li class="mb-1">
-                                <span class="font-medium">{{ ucfirst($activity->activity_type) }}</span> —
-                                {{ $activity->message ?? 'No message available.' }}
-                                <span class="text-xs text-gray-500">
-                                    ({{ $activity->created_at->format('M d, Y h:i A') }})
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            {{-- ✅ INVOICE ACTIVITY LOG (already perfect) --}}
+            @include('invoices.partials.activity-log', ['invoice' => $invoice])
+
         </div>
     </main>
 
