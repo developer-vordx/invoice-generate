@@ -110,7 +110,7 @@
             <table class="w-full mb-8">
                 <thead class="border-b-2 border-gray-300">
                 <tr class="text-left">
-                    <th class="pb-4 text-sm font-semibold text-gray-600">ACTIVITY</th>
+                    <th class="pb-4 text-sm font-semibold text-gray-600">SERVICE</th>
                     <th class="pb-4 text-sm font-semibold text-gray-600">DESCRIPTION</th>
                     <th class="pb-4 text-sm font-semibold text-gray-600 text-right">AMOUNT</th>
                 </tr>
@@ -193,6 +193,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        // EDIT INVOICE BUTTON
+        document.getElementById('editInvoiceBtn')?.addEventListener('click', function () {
+            window.location.href = "{{ route('invoices.edit', $invoice->id) }}";
+        });
         // VOID BUTTON
         document.getElementById('voidBtn')?.addEventListener('click', () => {
             Swal.fire({

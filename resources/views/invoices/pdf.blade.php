@@ -208,7 +208,7 @@
     <table class="items">
         <thead>
         <tr>
-            <th>ACTIVITY</th>
+            <th>SERVICE</th>
             <th>DESCRIPTION</th>
             <th style="text-align:right;">AMOUNT</th>
         </tr>

@@ -85,7 +85,7 @@
     </a>
     <a href="{{ route('invoice.respond', ['invoice' => $invoice->id, 'action' => 'declined']) }}"
        style="background-color: #DC2626; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">
-        ❌ Declined
+        ❌ Decline
     </a>
 </p>
 

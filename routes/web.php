@@ -76,7 +76,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/{id}/send', [InvoiceController::class, 'sendInvoiceEmail'])->name('sendEmail');       // Send email
         Route::post('/{invoice}/void', [InvoiceController::class, 'void'])->name('void');
 
-
     });
 
     Route::get('/reports', [InvoiceController::class, 'reports'])->name('reports');

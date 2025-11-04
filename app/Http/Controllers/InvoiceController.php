@@ -225,7 +225,8 @@ class InvoiceController extends Controller
      */
     public function edit(Invoice $invoice)
     {
-        //
+        $customers = Customer::latest()->get();
+        return view('invoices.edit', compact('customers','invoice'));
     }
 
     /**
@@ -233,8 +234,100 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, Invoice $invoice)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'address' => 'required|string',
+            'city' => 'required|string',
+            'customer_id' => 'nullable|integer|exists:customers,id',
+            'invoice_number' => 'nullable|string',
+            'issue_date' => 'required|date',
+            'line_items.*.description' => 'required|string',
+            'line_items.*.product_id' => 'required|integer|exists:products,id',
+            'line_items.*.quantity' => 'required|numeric|min:1',
+            'line_items.*.unit_price' => 'required|numeric|min:0',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // ✅ Fetch or update customer
+            $customer = Customer::updateOrCreate(
+                ['email' => $request->input('email')],
+                [
+                    'name' => $request->input('name'),
+                    'address' => $request->input('address'),
+                    'company_name' => $request->input('company_name'),
+                    'city' => $request->input('city'),
+                    'country' => 'USA',
+                ]
+            );
+
+            // ✅ Recalculate dates
+            $issueDate = Carbon::parse($request->input('issue_date'));
+            $dueDate = $issueDate->copy()->addYear();
+
+            // ✅ Update main invoice info
+            $invoice->update([
+                'customer_id' => $customer->id,
+                'invoice_number' => $request->input('invoice_number') ?: $invoice->invoice_number,
+                'description' => $request->input('description') ?? '',
+                'issue_date' => $issueDate,
+                'due_date' => $dueDate,
+                'note' => $request->input('notes') ?? '',
+                'project_address' => $request->input('project_address') ?? '',
+                'status' => $invoice->status, // keep status unless you want to modify
+            ]);
+
+            // ✅ Remove old line items before adding updated ones
+            $invoice->items()->delete();
+
+            // ✅ Recreate all line items and calculate total
+            $totalAmount = 0;
+            foreach ($request->input('line_items', []) as $item) {
+                $lineTotal = $item['quantity'] * $item['unit_price'];
+
+                $invoice->items()->create([
+                    'activity' => $item['description'],
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'amount' => $item['unit_price'],
+                    'total' => $lineTotal,
+                ]);
+
+                $totalAmount += $lineTotal;
+            }
+
+            // ✅ Update invoice total
+            $invoice->update(['amount' => $totalAmount]);
+
+            // ✅ Log activity
+            $invoice->logActivity(
+                'updated',
+                "Invoice #{$invoice->invoice_number} updated by " . (auth()->user()->name ?? 'System') . "."
+            );
+
+            DB::commit();
+
+            return redirect()
+                ->route('invoices.show', $invoice->id)
+                ->with('success', 'Invoice updated successfully!');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            \Log::error('Invoice update failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'invoice_id' => $invoice->id,
+                'user_id' => auth()->id(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Something went wrong while updating the invoice. Please try again.']);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.

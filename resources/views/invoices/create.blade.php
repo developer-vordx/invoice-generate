@@ -380,5 +380,5 @@
     </script>
 
     {{-- Google Places --}}
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.places_api_key') }}&libraries=places&callback=initAutocomplete" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD_jEATP0eq5jIeV4hgSyqyj5YeaKf-M6A&libraries=places&callback=initAutocomplete" async defer></script>
 @endsection
