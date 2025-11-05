@@ -182,6 +182,37 @@
                                 <input type="text" name="webhook_secret" value="{{ old('webhook_secret', $setting->webhook_secret) }}"
                                        class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500">
                             </div>
+
+                            @php
+                                // Get decrypted key
+                                $googleKey = $setting->google_places_key ?? '';
+
+                                // Mask all except last 4 characters
+                                $maskedKey = $googleKey ? str_repeat('*', max(0, strlen($googleKey) - 4)) . substr($googleKey, -4) : '';
+                            @endphp
+
+                            <div>
+                                <label class="block text-gray-600 font-medium mb-2">Google Places API Key</label>
+                                <div class="flex items-center space-x-3">
+                                    <input
+                                        type="password"
+                                        id="google_places_key"
+                                        name="google_places_key"
+                                        value="{{ old('google_places_key', $maskedKey) }}"
+                                        class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter your Google Places API Key">
+
+                                    <button type="button"
+                                            id="toggleGoogleKey"
+                                            data-full-key="{{ $googleKey }}"
+                                            class="bg-gray-100 border border-gray-300 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-200 transition">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Only the last 4 characters are shown by default.</p>
+                            </div>
+
+
                         </div>
 
                         <button type="submit"
@@ -313,6 +344,30 @@
     </script>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('google_places_key');
+            const toggle = document.getElementById('toggleGoogleKey');
+            const fullKey = toggle.dataset.fullKey || '';
+
+            toggle.addEventListener('click', () => {
+                const isMasked = input.type === 'password';
+
+                if (isMasked) {
+                    // Show full key
+                    input.type = 'text';
+                    input.value = fullKey;
+                    toggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                } else {
+                    // Mask it again (show last 4)
+                    const masked = fullKey
+                        ? '*'.repeat(Math.max(0, fullKey.length - 4)) + fullKey.slice(-4)
+                        : '';
+                    input.type = 'password';
+                    input.value = masked;
+                    toggle.innerHTML = '<i class="fas fa-eye"></i>';
+                }
+            });
+        });
         // 🔹 Live preview for uploaded logo
 
         function copyWebhook(url) {

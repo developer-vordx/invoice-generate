@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 class Setting extends Model
 {
@@ -28,6 +29,7 @@ class Setting extends Model
         'enable_tax_id',
         'enable_due_date',
         'starting_invoice_number',
+        'google_places_key'
     ];
 
     protected static function booted()
@@ -44,5 +46,17 @@ class Setting extends Model
         static::deleted(function ($setting) {
             Cache::forget('app_settings');
         });
+    }
+
+    // ✅ Automatically decrypt when accessed
+    public function getGooglePlacesKeyAttribute($value)
+    {
+        return $value ? Crypt::decryptString($value) : null;
+    }
+
+    // ✅ Automatically encrypt when saved
+    public function setGooglePlacesKeyAttribute($value)
+    {
+        $this->attributes['google_places_key'] = $value ? Crypt::encryptString($value) : null;
     }
 }
