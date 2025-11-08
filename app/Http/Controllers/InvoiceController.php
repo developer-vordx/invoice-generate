@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Invoice\StoreInvoiceRequest;
 use App\Mail\SendInvoiceMail;
 use App\Models\Customer;
 use App\Models\Invoice;
@@ -47,27 +48,12 @@ class InvoiceController extends Controller
      */
 
 
-    public function store(Request $request)
+    public function store(StoreInvoiceRequest $request)
     {
-
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'address' => 'required|string',
-            'city' => 'required|string',
-            'customer_id' => 'nullable|integer|exists:customers,id',
-            'invoice_number' => 'nullable|string',
-            'issue_date' => 'required|date',
-            'line_items.*.description' => 'required|string',
-            'line_items.*.product_id' => 'required|integer|exists:products,id',
-            'line_items.*.quantity' => 'required|numeric|min:1',
-            'line_items.*.unit_price' => 'required|numeric|min:0',
-        ]);
-
         DB::beginTransaction();
 
         try {
-            // ✅ Fetch or create customer
+            //  Fetch or create customer
             $customer = Customer::updateOrCreate(
                 ['email' => $request->input('email')],
                 [
@@ -79,14 +65,14 @@ class InvoiceController extends Controller
                 ]
             );
 
-            // ✅ Generate or use provided invoice number
+            //  Generate or use provided invoice number
             $invoiceNumber = $request->input('invoice_number') ?: Invoice::consumeNextInvoiceNumber();
 
-            // ✅ Calculate due date — 1 year after issue date
+            //  Calculate due date — 1 year after issue date
             $issueDate = Carbon::parse($request->input('issue_date'));
             $dueDate = $issueDate->copy()->addYear();
 
-            // ✅ Create invoice
+            //  Create invoice (excluding rush fee from total)
             $invoice = Invoice::create([
                 'user_id' => auth()->id(),
                 'customer_id' => $customer->id,
@@ -98,12 +84,19 @@ class InvoiceController extends Controller
                 'due_date' => $dueDate,
                 'note' => $request->input('notes') ?? '',
                 'project_address' => $request->input('project_address') ?? '',
+
+                // Rush Add-On fields
+                'enable_rush_addon' => (bool) $request->input('enable_rush_addon', false),
+                'rush_delivery_type' => $request->input('rush_delivery_type'),
+                'rush_description' => $request->input('rush_description'),
+                'rush_fee' => $request->input('rush_fee'),
             ]);
             $invoice->consumeNextInvoiceNumber();
-            // ✅ Create line items & calculate total
+            //  Create line items & calculate subtotal
             $totalAmount = 0;
             foreach ($request->input('line_items', []) as $item) {
                 $lineTotal = $item['quantity'] * $item['unit_price'];
+
                 $invoice->items()->create([
                     'activity' => $item['description'],
                     'product_id' => $item['product_id'],
@@ -111,17 +104,24 @@ class InvoiceController extends Controller
                     'amount' => $item['unit_price'],
                     'total' => $lineTotal,
                 ]);
+
                 $totalAmount += $lineTotal;
             }
 
-            // ✅ Update invoice total
+            //  Update invoice total (rush fee excluded for now)
             $invoice->update(['amount' => $totalAmount]);
 
-            $invoice->logActivity(
-                'created',
-                "Invoice #{$invoice->invoice_number} created by " . (auth()->user()->name ?? 'System') . " for customer {$customer->name}."
+            $invoice->logActivity( 'created',
+                sprintf(
+                    'Invoice #%s created by %s for customer %s, email sent to %s.',
+                    $invoice->invoice_number,
+                    auth()->user()->name ?? 'System',
+                    $customer->name,
+                    $customer->email
+                )
             );
-            // ✅ Dispatch mail job
+
+            // ✅ Send invoice email
             SendInvoiceEmail::dispatch($invoice, '', '');
 
             DB::commit();
@@ -133,18 +133,12 @@ class InvoiceController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            // Log the error for debugging
-            \Log::error('Invoice creation failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'user_id' => auth()->id(),
-            ]);
-
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Something went wrong while creating the invoice. Please try again.']);
         }
     }
+
 
 
     /**

@@ -27,11 +27,20 @@ class Invoice extends Model
         'gateway_response',
         'payment_status',
         'project_address',
+        'enable_rush_addon',
+        'rush_delivery_type',
+        'rush_description',
+        'rush_fee',
     ];
 
     protected $casts = [
         'gateway_response' => 'array',
     ];
+
+    public function getTotalWithRushAttribute()
+    {
+        return $this->amount + ($this->rush_fee ?? 0);
+    }
 
 
     public function customer()
@@ -63,6 +72,28 @@ class Invoice extends Model
         ]);
     }
 
+
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable');
+    }
+
+    public function notifyAction($type, $message = null, $status = 'alert')
+    {
+        return $this->notifications()->create([
+            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'type' => 'invoice_action',
+            'data' => [
+                'invoice_id' => $this->id,
+                'invoice_number' => $this->invoice_number,
+                'action' => $type,
+                'message' => $message,
+                'user_id' => auth()->id(),
+                'redirect_url' => route('invoices.show', $this->id),
+            ],
+            'status' => $status,
+        ]);
+    }
 
 
     /**

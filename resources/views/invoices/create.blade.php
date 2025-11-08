@@ -108,7 +108,6 @@
                         <h3 class="text-lg font-semibold text-gray-800 mb-6">Invoice Details</h3>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {{-- Invoice Number --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-3">Invoice Number *</label>
                                 <input type="text"
@@ -119,7 +118,6 @@
                                        required>
                             </div>
 
-                            {{-- Issue Date --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-3">Issue Date *</label>
                                 <input type="date"
@@ -130,7 +128,6 @@
                                        required>
                             </div>
 
-                            {{-- Conditionally show Due Date --}}
                             @if(!empty($globalSettings->enable_due_date) && $globalSettings->enable_due_date)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-3">Due Date *</label>
@@ -145,6 +142,42 @@
                         </div>
                     </div>
 
+                    {{-- RUSH ADD-ON FEE (NEW SECTION) --}}
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800">Rush Add-On (Optional)</h3>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="enable_rush_addon" name="enable_rush_addon" value="1"
+                                       class="h-5 w-5 text-blue-600 border-gray-300 rounded">
+                                <label for="enable_rush_addon" class="text-gray-700 font-medium">Enable Rush Add-On</label>
+                            </div>
+                        </div>
+
+                        <div id="rushAddonSection" class="hidden space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Type</label>
+                                <select id="rush_delivery_type" name="rush_delivery_type"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                                    <option value="">Select delivery type...</option>
+                                    <option value="shipping">Physical Delivery (Shipping)</option>
+                                    <option value="electronic">Electronic Delivery</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Add-On Description</label>
+                                <textarea id="rush_description" name="rush_description" rows="3"
+                                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600"
+                                          readonly></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Add-On Fee ($)</label>
+                                <input type="number" step="0.01" id="rush_fee" name="rush_fee"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600">
+                            </div>
+                        </div>
+                    </div>
 
                     {{-- LINE ITEMS --}}
                     <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
@@ -270,6 +303,11 @@
                 document.querySelectorAll('.line-total').forEach(el => {
                     total += parseFloat(el.dataset.value || 0);
                 });
+
+                // Include Rush Add-On if enabled
+                const rushFee = parseFloat($('#enable_rush_addon').is(':checked') ? ($('#rush_fee').val() || 0) : 0);
+                total += rushFee;
+
                 totalDisplay.textContent = `$${total.toFixed(2)}`;
             }
 
@@ -289,9 +327,7 @@
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
-
-                    {{-- Hidden Inputs --}}
-                <input type="hidden" name="line_items[${index}][product_id]" class="line-product-id">
+                    <input type="hidden" name="line_items[${index}][product_id]" class="line-product-id">
                     <input type="hidden" name="line_items[${index}][quantity]" value="1" class="line-quantity">
                     <input type="hidden" name="line_items[${index}][unit_price]" value="0" class="line-price">
                     <input type="hidden" name="line_items[${index}][description]" class="line-description">
@@ -359,6 +395,33 @@
             }
 
             addBtn.addEventListener('click', addLineItem);
+
+            // ✅ Rush Add-On Logic
+            $('#enable_rush_addon').on('change', function () {
+                if (this.checked) {
+                    $('#rushAddonSection').removeClass('hidden');
+                } else {
+                    $('#rushAddonSection').addClass('hidden');
+                    $('#rush_description').val('');
+                    $('#rush_fee').val('');
+                    $('#rush_delivery_type').val('');
+                    updateTotal();
+                }
+                updateTotal();
+            });
+
+            $('#rush_delivery_type').on('change', function () {
+                const type = $(this).val();
+                let description = '';
+                if (type === 'shipping') {
+                    description = 'Rush Add-On: Expedited processing and physical shipment within 24–48 hours.';
+                } else if (type === 'electronic') {
+                    description = 'Rush Add-On: Priority electronic delivery of completed documents within 24 hours.';
+                }
+                $('#rush_description').val(description);
+            });
+
+            $('#rush_fee').on('input', updateTotal);
         });
 
         // ✅ Google Places Autocomplete

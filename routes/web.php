@@ -75,6 +75,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/{invoice}/download', [InvoiceController::class, 'downloadPdf'])->name('download');
         Route::get('/{id}/send', [InvoiceController::class, 'sendInvoiceEmail'])->name('sendEmail');       // Send email
         Route::post('/{invoice}/void', [InvoiceController::class, 'void'])->name('void');
+        Route::get('/{invoice}/accept', [InvoiceResponseController::class, 'acceptPage'])->name('accept.page');
+        Route::post('/{invoice}/pay', [InvoiceResponseController::class, 'createPaymentSession'])->name('pay');
 
     });
 

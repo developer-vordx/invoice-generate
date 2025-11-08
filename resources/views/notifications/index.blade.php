@@ -42,7 +42,7 @@
                     </td>
                     <td class="p-4 border-b text-gray-500">{{ $notification->created_at->format('M d, Y h:i A') }}</td>
                     <td class="p-4 border-b text-right">
-                        <a href="{{ $data['url'] ?? '#' }}" target="_blank"
+                        <a href="{{ $data['redirect_url'] ?? '#' }}" target="_blank"
                            class="text-blue-600 hover:underline text-sm">View</a>
                     </td>
                 </tr>

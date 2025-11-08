@@ -49,8 +49,7 @@
                                 $data = $notification->data;
                             @endphp
 
-                            <a href="{{ $data['url'] ?? '#' }}"
-                               target="_blank"
+                            <a href="{{ $data['redirect_url'] ?? '#' }}"
                                class="block p-4 hover:bg-gray-50 border-b transition {{ $notification->read_at ? '' : 'bg-blue-50' }}">
                                 <div class="flex justify-between items-start">
                                     <div>
@@ -61,12 +60,21 @@
                                             {{ $data['message'] ?? '' }}
                                         </p>
                                     </div>
-                                    @if(isset($data['status']))
+                                    @if($notification->status)
                                         <span class="text-[10px] uppercase px-2 py-1 rounded-full
-                                            {{ $data['status'] === 'complete' ? 'bg-green-100 text-green-700' :
-                                               ($data['status'] === 'incomplete' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600') }}">
-                                            {{ $data['status'] }}
-                                        </span>
+                                        @switch($notification->status)
+                                            @case('accepted') bg-green-100 text-green-700 @break
+                                            @case('paid') bg-green-100 text-green-700 @break
+                                            @case('declined') bg-red-100 text-red-700 @break
+                                            @case('rejected') bg-red-100 text-red-700 @break
+                                            @case('revisited') bg-blue-100 text-blue-700 @break
+                                            @case('viewed') bg-gray-100 text-gray-600 @break
+                                            @case('alert') bg-yellow-100 text-yellow-700 @break
+                                            @case('invalid_action') bg-orange-100 text-orange-700 @break
+                                            @default bg-gray-100 text-gray-600
+                                        @endswitch">
+                                        {{ ucfirst($notification->status) }}
+                                    </span>
                                     @endif
                                 </div>
                                 <span class="text-[11px] text-gray-500 block mt-2">
