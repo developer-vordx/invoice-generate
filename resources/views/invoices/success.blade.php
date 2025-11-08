@@ -55,7 +55,7 @@
                             <td class="p-2 text-right">${{ number_format($item->quantity * $item->amount, 2) }}</td>
                         </tr>
                     @endforeach
-                    @if ($invoice->rush_enabled)
+                    @if ($invoice->rush_enabled_value)
                         <tr class="border-t bg-yellow-50">
                             <td class="p-2 font-medium">Rush Add-On ({{ ucfirst($invoice->rush_delivery_type) }})</td>
                             <td class="p-2 text-center">1</td>
@@ -66,7 +66,7 @@
                     </tbody>
                     @php
                         $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-                        $rushFee = ($invoice->rush_enabled) ? $invoice->rush_fee : 0;
+                        $rushFee = ($invoice->rush_enabled_value) ? $invoice->rush_fee : 0;
                         $total = $subtotal + $rushFee;
                     @endphp
                     <tfoot>

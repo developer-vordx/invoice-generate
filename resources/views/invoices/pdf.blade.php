@@ -204,7 +204,17 @@
     </div>
 
     {{-- ITEMS --}}
-    @php $currency = $globalSettings->base_currency ?? '$'; @endphp
+    @php
+        $currency = $globalSettings->base_currency ?? '$';
+        $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
+        $rushFee = $invoice->rush_enabled_value ? ($invoice->rush_fee ?? 0) : 0;
+        $taxRate = (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax)
+                    ? ($globalSettings->tax_percentage ?? 0) / 100
+                    : 0;
+        $taxAmount = ($subtotal + $rushFee) * $taxRate;
+        $total = $subtotal + $rushFee + $taxAmount;
+    @endphp
+
     <table class="items">
         <thead>
         <tr>
@@ -221,30 +231,40 @@
                 <td>{{ $currency }}{{ number_format($item->quantity * $item->amount, 2) }}</td>
             </tr>
         @endforeach
+
+        {{-- Rush Add-On --}}
+        @if($invoice->rush_enabled_value)
+            <tr class="bg-yellow-50 font-semibold">
+                <td>Rush Add-On ({{ ucfirst($invoice->rush_delivery_type) ?? 'Fast' }})</td>
+                <td>Expedite delivery service</td>
+                <td style="text-align:right">{{ $currency }}{{ number_format($rushFee, 2) }}</td>
+            </tr>
+        @endif
         </tbody>
     </table>
 
     {{-- TOTALS --}}
-    @php
-        $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-        $taxRate = (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax)
-                    ? ($globalSettings->tax_percentage ?? 0) / 100
-                    : 0;
-        $taxAmount = $subtotal * $taxRate;
-        $total = $subtotal + $taxAmount;
-    @endphp
     <div class="totals">
         <div class="totals-inner">
             <div class="totals-row">
                 <span><strong>Subtotal:</strong></span>
                 <span>{{ $currency }}{{ number_format($subtotal, 2) }}</span>
             </div>
+
+            @if($invoice->rush_enabled_value)
+                <div class="totals-row font-semibold bg-yellow-50">
+                    <span>Rush Add-On ({{ ucfirst($invoice->rush_delivery_type) ?? 'Fast' }}):</span>
+                    <span>{{ $currency }}{{ number_format($rushFee, 2) }}</span>
+                </div>
+            @endif
+
             @if(!empty($globalSettings->enable_tax) && $globalSettings->enable_tax)
                 <div class="totals-row">
                     <span><strong>Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</strong></span>
                     <span>{{ $currency }}{{ number_format($taxAmount, 2) }}</span>
                 </div>
             @endif
+
             <div class="totals-row total">
                 <span>Total:</span>
                 <span>{{ $currency }}{{ number_format($total, 2) }}</span>

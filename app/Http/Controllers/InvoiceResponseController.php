@@ -92,16 +92,20 @@ class InvoiceResponseController extends Controller
     // ✅ STEP 2: Create Stripe session (includes rush fee if enabled)
     public function createPaymentSession(Request $request, Invoice $invoice)
     {
-        dd($request->all());
-        $baseAmount = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-        $rushFee = $invoice->rush_enabled ? ($invoice->rush_fee ?? 0) : 0;
-        $totalAmount = $baseAmount + $rushFee;
 
-        $stripeSecret = config('settings.stripe_secret_key');
-        if (!$stripeSecret) {
-            abort(500, 'Stripe secret key not configured.');
+        // Save rush selection
+        $totalAmount = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
+        $rushEnabled = $request->has('rush_enabled_value') ? true : false;
+        if ($rushEnabled) {
+
+            $rushFee = $rushEnabled ? ($invoice->rush_fee ?? 0) : 0;
+            $totalAmount = $totalAmount + $rushFee;
         }
 
+
+        // Stripe
+        $stripeSecret = config('settings.stripe_secret_key');
+        if (!$stripeSecret) abort(500, 'Stripe secret key not configured.');
         Stripe::setApiKey($stripeSecret);
 
         $lineItems = [
@@ -109,22 +113,12 @@ class InvoiceResponseController extends Controller
                 'price_data' => [
                     'currency' => 'USD',
                     'product_data' => ['name' => "Invoice #{$invoice->invoice_number}"],
-                    'unit_amount' => $baseAmount * 100,
+                    'unit_amount' => $totalAmount * 100,
                 ],
                 'quantity' => 1,
             ],
         ];
 
-        if ($rushFee > 0) {
-            $lineItems[] = [
-                'price_data' => [
-                    'currency' => 'USD',
-                    'product_data' => ['name' => 'Rush Add-On (' . ucfirst($invoice->rush_delivery_type) . ')'],
-                    'unit_amount' => $rushFee * 100,
-                ],
-                'quantity' => 1,
-            ];
-        }
 
         $session = Session::create([
             'payment_method_types' => ['card'],
@@ -136,12 +130,15 @@ class InvoiceResponseController extends Controller
             'metadata' => ['invoice_id' => $invoice->id],
         ]);
 
+        // Save Stripe details
         $invoice->update([
             'payment_gateway'        => 'stripe',
             'gateway_transaction_id' => $session->id,
             'gateway_response'       => array_merge($session->toArray(), ['url' => $session->url]),
             'payment_status'         => 'pending',
             'status'                 => 'pending',
+            'amount'                 => $totalAmount,
+            'rush_enabled_value'     => $request->has('rush_enabled_value'),
         ]);
 
         $invoice->logActivity('proceed_payment', 'Customer proceeded to payment via Stripe checkout.');
@@ -149,6 +146,7 @@ class InvoiceResponseController extends Controller
 
         return redirect($session->url);
     }
+
 
     public function rejected(Invoice $invoice)
     {

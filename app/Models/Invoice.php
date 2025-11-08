@@ -31,6 +31,7 @@ class Invoice extends Model
         'rush_delivery_type',
         'rush_description',
         'rush_fee',
+        'rush_enabled_value'
     ];
 
     protected $casts = [

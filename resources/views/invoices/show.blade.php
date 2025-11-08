@@ -31,7 +31,6 @@
         </div>
     </header>
 
-    <!-- Invoice Content -->
     <main class="flex-1 overflow-y-auto p-8">
         <div class="max-w-4xl mx-auto bg-white p-12 rounded-xl shadow-sm border border-gray-100" id="invoiceContent">
 
@@ -40,7 +39,6 @@
                 <div>
                     <h1 class="text-4xl font-bold text-gray-800 mb-2">INVOICE</h1>
                     <p class="text-lg text-gray-600">#{{ $invoice->invoice_number }}</p>
-                    {{-- ✅ PROJECT ADDRESS --}}
                     @if(!empty($invoice->project_address))
                         <p class="text-sm font-bold text-gray-500 mb-1">PROJECT ADDRESS:</p>
                         <p class="text-gray-800 whitespace-pre-line">{{ $invoice->project_address }}</p>
@@ -87,18 +85,18 @@
 
                         <span class="text-gray-500">Status:</span>
                         <span>
-                            <?php
+                        @php
                             $color = match($invoice->status) {
                                 'sent' => 'bg-blue-100 text-blue-600',
                                 'paid' => 'bg-green-100 text-green-600',
                                 'void' => 'bg-red-100 text-red-600',
                                 default => 'bg-gray-100 text-gray-600',
                             };
-                            ?>
-                            <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $color }}">
-                                {{ strtoupper($invoice->status ?? 'N/A') }}
-                            </span>
+                        @endphp
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full {{ $color }}">
+                            {{ strtoupper($invoice->status ?? 'N/A') }}
                         </span>
+                    </span>
                     </div>
                 </div>
             </div>
@@ -106,7 +104,18 @@
             <!-- Line Items -->
             @php
                 $currency = $globalSettings->base_currency ?? '$';
+                $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
+                $rushFee = $invoice->rush_enabled_value ? ($invoice->rush_fee ?? 0) : 0;
+                if (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax) {
+                    $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
+                    $taxAmount = ($subtotal + $rushFee) * $taxRate;
+                } else {
+                    $taxRate = 0;
+                    $taxAmount = 0;
+                }
+                $total = $subtotal + $rushFee + $taxAmount;
             @endphp
+
             <table class="w-full mb-8">
                 <thead class="border-b-2 border-gray-300">
                 <tr class="text-left">
@@ -123,28 +132,33 @@
                         <td class="text-right">{{ $currency }}{{ number_format($item->quantity * $item->amount, 2) }}</td>
                     </tr>
                 @endforeach
+
+                {{-- Rush Add-On --}}
+                @if($invoice->rush_enabled_value)
+                    <tr class="bg-yellow-50 font-semibold">
+                        <td>Rush Add-On ({{ ucfirst($invoice->rush_delivery_type) ?? 'Fast' }})</td>
+                        <td>Expedite delivery service</td>
+                        <td class="text-right">{{ $currency }}{{ number_format($invoice->rush_fee ?? 0, 2) }}</td>
+                    </tr>
+                @endif
                 </tbody>
             </table>
 
             <!-- Totals -->
-            @php
-                $subtotal = $invoice->items->sum(fn($item) => $item->quantity * $item->amount);
-                if (!empty($globalSettings->enable_tax) && $globalSettings->enable_tax) {
-                    $taxRate = $globalSettings->tax_percentage ? $globalSettings->tax_percentage / 100 : 0;
-                    $taxAmount = $subtotal * $taxRate;
-                } else {
-                    $taxRate = 0;
-                    $taxAmount = 0;
-                }
-                $total = $subtotal + $taxAmount;
-            @endphp
-
             <div class="flex justify-end mb-12">
                 <div class="w-64">
                     <div class="flex justify-between py-2 border-t border-gray-200">
                         <span class="font-semibold">Subtotal:</span>
                         <span>{{ $currency }}{{ number_format($subtotal, 2) }}</span>
                     </div>
+
+                    @if($invoice->rush_enabled_value)
+                        <div class="flex justify-between py-2 border-t border-gray-200 font-semibold bg-yellow-50">
+                            <span>Rush Add-On ({{ ucfirst($invoice->rush_delivery_type) ?? 'Fast' }}):</span>
+                            <span>{{ $currency }}{{ number_format($invoice->rush_fee ?? 0, 2) }}</span>
+                        </div>
+                    @endif
+
                     @if($globalSettings->enable_tax)
                         <div class="flex justify-between py-2 border-t border-gray-200">
                             <span class="font-semibold">Tax ({{ $globalSettings->tax_percentage ?? 0 }}%):</span>
@@ -183,12 +197,13 @@
                 @endif
             </div>
 
-            {{-- ✅ INVOICE ACTIVITY LOG (already perfect) --}}
+            {{-- ✅ Invoice Activity Log --}}
             @include('invoices.partials.activity-log', ['invoice' => $invoice])
 
         </div>
     </main>
 
+    <!-- SweetAlert -->
     <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
