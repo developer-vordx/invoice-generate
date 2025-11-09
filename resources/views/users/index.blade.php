@@ -52,7 +52,9 @@
             </table>
         </div>
     </main>
-
+    <div class="mt-8 flex justify-center">
+        {{ $users->links('components.pagination') }}
+    </div>
     <!-- Invite Modal -->
     <div id="inviteModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
         <div class="bg-white p-6 rounded-xl w-96 shadow-lg">

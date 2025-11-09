@@ -67,12 +67,10 @@
             </table>
         </div>
 
-        <div class="mt-4">
-            {{ $products->links('vendor.pagination.tailwind') }}
-        </div>
         <div class="mt-8 flex justify-center">
             {{ $products->links('components.pagination') }}
         </div>
+
         <!-- Import CSV Modal -->
         <div id="importCsvModal"
              class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

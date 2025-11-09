@@ -111,9 +111,10 @@
                 </tbody>
             </table>
 
-            <div class="mt-4">
-                {{ $invoices->links() }}
+            <div class="mt-8 flex justify-center">
+                {{ $invoices->links('components.pagination') }}
             </div>
+
         </div>
 
     </main>

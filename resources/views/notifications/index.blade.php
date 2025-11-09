@@ -32,13 +32,25 @@
                     <td class="p-4 border-b font-semibold">{{ $data['title'] ?? 'Notification' }}</td>
                     <td class="p-4 border-b text-gray-700">{{ $data['message'] ?? '' }}</td>
                     <td class="p-4 border-b">
-                        @if(isset($data['status']))
+                        @if(isset($notification['status']))
                             <span class="px-2 py-1 rounded-full text-xs uppercase
-                                    {{ $data['status'] === 'complete' ? 'bg-green-100 text-green-700' :
-                                       ($data['status'] === 'incomplete' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600') }}">
-                                    {{ $data['status'] }}
-                                </span>
+                                @switch($notification['status'])
+                                    @case('accepted') bg-green-100 text-green-700 @break
+                                    @case('paid') bg-green-100 text-green-700 @break
+                                    @case('declined') bg-red-100 text-red-700 @break
+                                    @case('rejected') bg-red-100 text-red-700 @break
+                                    @case('revisited') bg-blue-100 text-blue-700 @break
+                                    @case('viewed') bg-gray-100 text-gray-600 @break
+                                    @case('alert') bg-yellow-100 text-yellow-700 @break
+                                    @case('invalid_action') bg-orange-100 text-orange-700 @break
+                                    @case('complete') bg-green-100 text-green-700 @break
+                                    @case('incomplete') bg-yellow-100 text-yellow-700 @break
+                                    @default bg-gray-100 text-gray-600
+                                @endswitch">
+                                {{ ucfirst($notification['status']) }}
+                             </span>
                         @endif
+
                     </td>
                     <td class="p-4 border-b text-gray-500">{{ $notification->created_at->format('M d, Y h:i A') }}</td>
                     <td class="p-4 border-b text-right">
@@ -55,7 +67,7 @@
         </table>
     </div>
 
-    <div class="mt-4">
-        {{ $notifications->links('vendor.pagination.tailwind') }}
+    <div class="mt-8 flex justify-center">
+        {{ $notifications->links('components.pagination') }}
     </div>
 @endsection
