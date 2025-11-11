@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
+
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/organization', [SettingController::class, 'updateOrganization'])->name('settings.organization.update');
     Route::post('/settings/integration', [SettingController::class, 'updateIntegration'])->name('settings.integration.update');
@@ -112,6 +113,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/help', function () {
         return view('help');
     })->name('help');
+
+    Route::post('/settings/webhook/update', [App\Http\Controllers\WebhookSettingController::class, 'updateWebhooks'])
+        ->name('settings.webhook.update');
+    Route::post('/settings/security/update', [\App\Http\Controllers\SettingController::class, 'updatePassword'])
+        ->name('settings.security.update');
+
+
 });
 Route::get('/invitation/accept/{token}', [InvitationController::class, 'accept'])
     ->name('invitation.accept');

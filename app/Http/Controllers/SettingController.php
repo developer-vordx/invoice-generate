@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Models\WebhookSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
@@ -11,7 +14,11 @@ class SettingController extends Controller
     public function index()
     {
         $setting = Setting::first();
-        return view('settings.index', compact('setting'));
+
+        // Get webhook settings (or create a new instance if none exists)
+        $webhookSetting = WebhookSetting::first() ?? new WebhookSetting();
+
+        return view('settings.index', compact('setting', 'webhookSetting'));
     }
 
     public function updateOrganization(Request $request)
@@ -98,5 +105,17 @@ class SettingController extends Controller
         return back()->with('success', 'Invoice settings updated successfully.');
     }
 
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'new_password' => ['required', 'confirmed', 'min:8'],
+        ]);
 
+        $user = Auth::user();
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', 'Password updated successfully!');
+    }
 }

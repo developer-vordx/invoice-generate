@@ -9,6 +9,16 @@
             <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
             <p class="text-gray-500 mt-1">Manage your organization, integrations, and preferences.</p>
         </div>
+        {{-- Display Validation Errors --}}
+        @if ($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                <ul class="list-disc pl-5 space-y-1 text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div class="bg-white shadow-lg rounded-2xl flex overflow-hidden">
             <!-- 🔸 Sidebar Tabs -->
@@ -25,6 +35,11 @@
                     <button id="tab-invoice"
                             class="tab-btn flex items-center px-6 py-3 text-left text-gray-600 hover:bg-gray-100 hover:text-blue-600 border-l-4 border-transparent">
                         <i class="fas fa-file-invoice-dollar mr-3"></i> Invoice Configuration
+                    </button>
+                    <!-- 🆕 Add this new Webhook Settings tab -->
+                    <button id="tab-webhook"
+                            class="tab-btn flex items-center px-6 py-3 text-left text-gray-600 hover:bg-gray-100 hover:text-blue-600 border-l-4 border-transparent">
+                        <i class="fas fa-link mr-3"></i> Webhook Settings
                     </button>
                     <button id="tab-security"
                             class="tab-btn flex items-center px-6 py-3 text-left text-gray-600 hover:bg-gray-100 hover:text-blue-600 border-l-4 border-transparent">
@@ -316,6 +331,124 @@
                     </form>
                 </div>
 
+                {{-- 🌐 Webhook Settings --}}
+                <div id="tab-content-webhooks" class="hidden">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Webhook Settings</h2>
+
+                    <form method="POST" action="{{ route('settings.webhook.update') }}" class="space-y-6">
+                        @csrf
+
+                        <!-- 🔹 Webhook URL -->
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">Webhook URL</label>
+                            <input type="url" name="webhook_url" value="{{ old('webhook_url', $webhookSetting->webhook_url ?? '') }}"
+                                   placeholder="https://example.com/webhook"
+                                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- 🔹 Webhook Secret -->
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">Webhook Secret</label>
+                            <input type="text" name="webhook_secret" value="{{ old('webhook_secret', $webhookSetting->webhook_secret ?? '') }}"
+                                   placeholder="secret-key"
+                                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- 🔸 Switches for Events -->
+                        <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Customer Events</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            @foreach (['create', 'update', 'delete'] as $event)
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700 font-medium capitalize">Customer {{ $event }}</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="enable_customer_{{ $event }}" value="1"
+                                               class="sr-only peer"
+                                            {{ old("enable_customer_$event", $webhookSetting->{"enable_customer_$event"} ?? false) ? 'checked' : '' }}>
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                        <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Product Events</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            @foreach (['create', 'update', 'delete'] as $event)
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700 font-medium capitalize">Product {{ $event }}</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="enable_product_{{ $event }}" value="1"
+                                               class="sr-only peer"
+                                            {{ old("enable_product_$event", $webhookSetting->{"enable_product_$event"} ?? false) ? 'checked' : '' }}>
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                        <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Invoice Events</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            @foreach (['create', 'update', 'delete'] as $event)
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700 font-medium capitalize">Invoice {{ $event }}</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="enable_invoice_{{ $event }}" value="1"
+                                               class="sr-only peer"
+                                            {{ old("enable_invoice_$event", $webhookSetting->{"enable_invoice_$event"} ?? false) ? 'checked' : '' }}>
+                                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
+                                        <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform"></div>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <button type="submit"
+                                class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all mt-6">
+                            Save Webhook Settings
+                        </button>
+                    </form>
+                </div>
+
+                {{-- 🛡 Security Settings --}}
+                <div id="tab-content-security" class="hidden">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Security</h2>
+
+                    <form method="POST" action="{{ route('settings.security.update') }}" class="space-y-6">
+                        @csrf
+
+                        <!-- Current Password -->
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">Current Password</label>
+                            <input type="password" name="current_password" placeholder="Enter current password"
+                                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- New Password -->
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">New Password</label>
+                            <input type="password" name="new_password" placeholder="Enter new password"
+                                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div>
+                            <label class="block text-gray-600 font-medium mb-2">Confirm New Password</label>
+                            <input type="password" name="new_password_confirmation" placeholder="Confirm new password"
+                                   class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <button type="submit"
+                                class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition-all mt-4">
+                            Update Password
+                        </button>
+                    </form>
+                </div>
+
+
             </div>
         </div>
     </div>
@@ -394,10 +527,13 @@
             int: document.getElementById('tab-int'),
             invoice: document.getElementById('tab-invoice'),
             sec: document.getElementById('tab-security'),
+            webhook: document.getElementById('tab-webhook'),
             noti: document.getElementById('tab-notifications'),
             contentOrg: document.getElementById('tab-content-org'),
             contentInt: document.getElementById('tab-content-int'),
             contentInvoice: document.getElementById('tab-content-invoice'),
+            contentWebhook: document.getElementById('tab-content-webhooks'),
+            contentSecurity: document.getElementById('tab-content-security'),
         };
 
         function switchTab(activeTab, activeContent) {
@@ -414,5 +550,7 @@
         tabs.org.addEventListener('click', () => switchTab(tabs.org, tabs.contentOrg));
         tabs.int.addEventListener('click', () => switchTab(tabs.int, tabs.contentInt));
         tabs.invoice.addEventListener('click', () => switchTab(tabs.invoice, tabs.contentInvoice));
+        tabs.webhook.addEventListener('click', () => switchTab(tabs.webhook, tabs.contentWebhook));
+        tabs.sec.addEventListener('click', () => switchTab(tabs.sec, tabs.contentSecurity));
     </script>
 @endsection
